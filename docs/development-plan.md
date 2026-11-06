@@ -132,21 +132,23 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - GitHub Issues track work, with labels: `type:feature`, `type:bug`, `area:parser`, `area:alarm`, `area:ui`, `phase:1`…
 - A GitHub Project board (Backlog → In progress → Review → Done) and one Milestone per phase.
 
-## 6. Visual identity (draft)
+## 6. Visual identity (draft v2)
 
-Warm and fresh. No deep blues.
+A calm, legible look built on HCI principles. No deep blues, and no orange-on-cream.
 
 | Token | Hex | Use |
 |-------|-----|-----|
-| Ink | `#1E2420` | Text, the "Next up" hero card |
-| Ground | `#F4F5F0` | App background |
-| Tangerine | `#C4461C` | Primary actions (Save, Update) |
-| Tangerine soft | `#FCE6DC` | Capture bar, highlights |
-| Done green | `#2E8B57` | Completed check badge, toggles |
+| Ink | `#16181D` | Text and primary buttons (highest contrast) |
+| Paper | `#FFFFFF` | Background |
+| Surface | `#F3F4F2` | Grouped content, secondary buttons |
+| Highlighter | `#FFE066` | Understood words, the "Now" line, focus |
+| Done green | `#1E8E4E` | Completed check badge |
+| Stop red | `#C8102E` | Alarm Stop button, alarm-style reminders |
 | Meeting | `#0F7C72` | Teal |
 | Dinner date | `#C23B6B` | Rose |
 | Match | `#B7770B` | Amber |
 | Task | `#7A4BB0` | Plum |
 | Tour | `#5E7A22` | Olive |
 
-Font: Manrope. Completed entries are shown at 70% opacity with a green check badge, in a collapsible "Done" section.
+Font: **Atkinson Hyperlegible**, designed by the Braille Institute so that easily confused letters and numbers (like 1/l/I or 0/O) are easy to tell apart.
+Times use tabular numbers, and are shown in 12-hour format by default.

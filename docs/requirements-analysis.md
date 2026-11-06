@@ -198,17 +198,23 @@ natural-language input.
 | Quality | Parser has 300+ unit-tested phrases. Unit, UI and screenshot tests run in CI. |
 | Localisation | English at launch; Bangla planned |
 
-## 7. UX principles
+## 7. UX principles (HCI-based)
 
-1. **Three taps or fewer** from a message to a saved reminder: share → check → save.
-2. **Show what the app understood.** The parse preview highlights the source text instead of hiding it.
-3. **Undo rather than confirm.** Don't interrupt with "Are you sure?" dialogs.
-4. **Ask for permissions when they're needed.** Explain why at the moment of need, not in a wall at onboarding.
-5. **Glanceable home screen.** The next item is always the hero card, with a live countdown.
-6. **Gestures.** Swipe right to complete, swipe left to snooze or reschedule, long-press for quick actions.
-7. **Personality without clutter.** A distinct colour and icon per type, gentle motion, and friendly empty states.
-8. **The user is always in control.** Every suggestion (date, type, importance, reminder chain) can be accepted in one tap or changed. Nothing important happens without the user seeing it.
-9. **Alarms never cause panic.** Clear words over icons, one obvious way to stop, a limit on ringing, and a discreet mode.
+| # | Principle | How the app applies it |
+|---|-----------|------------------------|
+| 1 | **Thumb zone (Fitts's law)** | Every primary action sits in the bottom third, as a large target. The top of the screen is only for reading. |
+| 2 | **Natural mapping** | The home screen is a time line: position shows time, with a "Now" line and past plans above it. The reminder editor is a ruler with draggable markers, so distance before the event is visible. |
+| 3 | **Keep context** | Capturing or updating from a chat opens a half-height sheet over the chat, not a new screen. |
+| 4 | **Visible system status** | One plain sentence says where you are: "2 plans left today. Next is Dinner in 1 h 20 min." |
+| 5 | **Show what was understood** | Parsed words are marked like a highlighter pen. Solid = understood, dashed = a guess. Tapping a word changes it. |
+| 6 | **Recognition over recall** | Options explain their effect ("Important — three reminders, the last one rings"). Time is nudged with −15 / +15 instead of typed. |
+| 7 | **Fewer choices per step (Hick's law)** | Each screen has one primary button. Rare settings are folded away (progressive disclosure). |
+| 8 | **Error prevention on alarms** | Stop and Snooze differ in size, colour, shape and position. Each button says what happens next. A volume press silences first, so the user can decide calmly. Ringing has a time limit. |
+| 9 | **User control & freedom** | Every suggestion can be changed. Delete and update come with Undo. Nothing is overwritten without a confirmation question. |
+| 10 | **Proactive but polite** | When the user copies a message that contains a plan, a dismissible "Make it a plan" suggestion appears. It never interrupts. |
+| 11 | **State shown by position + colour + icon** | Completed plans are faded, have a green check, and sit above the Now line, so colour isn't the only signal (colour-blind safe). |
+| 12 | **Legibility & accessibility** | A hyperlegible font, 16–17 px body text, 44 px+ touch targets, WCAG AA contrast, TalkBack labels, and support for 200% font size. |
+| 13 | **Plain language** | Labels are sentences people say ("Move Team meeting to 10:00 PM?"), not system jargon. |
 
 ## 8. Platform constraints & risks
 
