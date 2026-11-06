@@ -122,11 +122,15 @@ fun AddPlanSheet(
     onDismiss: () -> Unit,
     onPaste: () -> Unit,
     onType: () -> Unit,
+    onScreenshot: () -> Unit,
+    onPhoto: () -> Unit,
 ) {
     ModalBottomSheet(onDismissRequest = onDismiss) {
         Column(modifier = Modifier.padding(horizontal = 22.dp).padding(bottom = 28.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.add_a_plan), style = MaterialTheme.typography.titleLarge)
             SheetOption(stringResource(R.string.paste_a_message), stringResource(R.string.paste_a_message_desc), onPaste)
+            SheetOption(stringResource(R.string.from_screenshot), stringResource(R.string.from_screenshot_desc), onScreenshot)
+            SheetOption(stringResource(R.string.take_photo), stringResource(R.string.take_photo_desc), onPhoto)
             SheetOption(stringResource(R.string.type_it_yourself), stringResource(R.string.type_it_yourself_desc), onType)
         }
     }

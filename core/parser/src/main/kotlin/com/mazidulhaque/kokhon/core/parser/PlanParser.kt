@@ -118,9 +118,17 @@ class PlanParser(
                 pieces += range
             }
         }
+
         // Merge pieces that only make sense together: "Tomorrow. Meeting at 9" or a sentence with no time at all.
+        // A separate line with no time and no kind of plan ("haha that was fun" in a chat) is ignored.
+        fun ownLine(range: IntRange) = range.first == 0 || text.substring(0, range.first).trimEnd(' ', '\t').endsWith('\n')
+
+        fun isChatter(range: IntRange): Boolean {
+            val m = all.within(range)
+            return !m.hasWhen && m.types.isEmpty() && m.tasks.isEmpty() && text.contains('\n') && ownLine(range)
+        }
         val merged = mutableListOf<IntRange>()
-        pieces.forEach { piece ->
+        pieces.filterNot { isChatter(it) }.forEach { piece ->
             val previous = merged.lastOrNull()
             if (previous == null) {
                 merged += piece

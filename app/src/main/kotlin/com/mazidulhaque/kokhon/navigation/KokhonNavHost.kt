@@ -35,6 +35,8 @@ import kotlinx.serialization.Serializable
     val text: String = "",
     val source: String = "PASTED_TEXT",
     val targetId: Long = 0,
+    /** A screenshot or photo to read. */
+    val imageUri: String = "",
 )
 
 @Serializable data class RemindersRoute(
@@ -47,6 +49,7 @@ import kotlinx.serialization.Serializable
 fun KokhonNavHost(
     entryToOpen: MutableStateFlow<Long?>,
     sharedText: MutableStateFlow<String?>,
+    sharedImage: MutableStateFlow<String?>,
 ) {
     val nav = rememberNavController()
     val pending by entryToOpen.collectAsStateWithLifecycle()
@@ -63,12 +66,20 @@ fun KokhonNavHost(
             sharedText.value = null
         }
     }
+    val image by sharedImage.collectAsStateWithLifecycle()
+    LaunchedEffect(image) {
+        image?.let {
+            nav.navigate(CaptureRoute(imageUri = it, source = "SCREENSHOT")) { launchSingleTop = true }
+            sharedImage.value = null
+        }
+    }
     NavHost(navController = nav, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(
                 onOpenEntry = { nav.navigate(DetailRoute(it)) },
                 onAddPlan = { nav.navigate(EditorRoute()) },
                 onCapture = { text -> nav.navigate(CaptureRoute(text = text)) },
+                onCaptureImage = { uri -> nav.navigate(CaptureRoute(imageUri = uri.toString(), source = "SCREENSHOT")) },
                 onOpenSettings = { nav.navigate(SettingsRoute) },
             )
         }
@@ -112,6 +123,7 @@ fun KokhonNavHost(
             val route = entry.toRoute<CaptureRoute>()
             CaptureScreen(
                 initialText = route.text,
+                initialImage = route.imageUri,
                 source = EntrySource.Kind.entries.firstOrNull { it.name == route.source } ?: EntrySource.Kind.PASTED_TEXT,
                 targetId = route.targetId,
                 onClose = { nav.popBackStack() },

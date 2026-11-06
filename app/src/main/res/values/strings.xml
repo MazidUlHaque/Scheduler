@@ -237,4 +237,17 @@
     <string name="update_from_message">Update from a message or screenshot</string>
     <string name="history">History</string>
     <string name="history_from_message">From: “%1$s”</string>
+
+    <!-- Screenshots -->
+    <string name="pick_screenshot">Pick a screenshot</string>
+    <string name="take_photo">Take a photo</string>
+    <string name="from_screenshot">From a screenshot</string>
+    <string name="from_screenshot_desc">Kokhon reads the chat on your phone. Nothing is uploaded.</string>
+    <string name="take_photo_desc">Of an invitation, a notice or a whiteboard</string>
+    <string name="reading_screenshot">Reading the screenshot…</string>
+    <string name="reading_screenshot_desc">This happens on your phone.</string>
+    <string name="image_unreadable">I couldn\'t read any text in that image. Try a clearer screenshot, or paste the message instead.</string>
+    <string name="screenshot_preview_cd">The screenshot that was read</string>
+    <string name="written_at">The message was sent %1$s, so dates are read from then.</string>
+    <string name="or">or</string>
 </resources>

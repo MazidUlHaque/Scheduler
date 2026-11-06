@@ -1,5 +1,7 @@
 package com.mazidulhaque.kokhon.ui.capture
 
+import android.graphics.Bitmap
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.mazidulhaque.kokhon.core.alarm.ReminderCoordinator
@@ -10,6 +12,7 @@ import com.mazidulhaque.kokhon.core.model.EntryStatus
 import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderChain
+import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ChangeRequest
 import com.mazidulhaque.kokhon.core.parser.MatchCandidate
 import com.mazidulhaque.kokhon.core.parser.PlanDraft
@@ -27,6 +30,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZonedDateTime
 
 /** A plan found in the message, as the user is editing it. */
 data class DraftUi(
@@ -53,7 +57,7 @@ data class CandidateUi(
     val selected: Boolean,
 )
 
-enum class CaptureMode { INPUT, CREATE, UPDATE, NOTHING_TO_CHANGE, NOTHING_FOUND }
+enum class CaptureMode { INPUT, READING, CREATE, UPDATE, NOTHING_TO_CHANGE, NOTHING_FOUND }
 
 data class CaptureState(
     val text: String = "",
@@ -65,17 +69,24 @@ data class CaptureState(
     val target: Entry? = null,
     /** Set when finished: the plan to open, or 0 to go home. */
     val finishedWith: Long? = null,
+    /** Preview of the screenshot the text came from. */
+    val thumbnail: Bitmap? = null,
+    /** When the message was written, if the screenshot showed it; dates are read relative to it. */
+    val writtenAt: ZonedDateTime? = null,
+    val imageUnreadable: Boolean = false,
 )
 
 class CaptureViewModel(
     initialText: String,
-    private val sourceKind: EntrySource.Kind,
+    initialImage: Uri?,
+    private var sourceKind: EntrySource.Kind,
     private val targetId: Long,
     private val parser: PlanParser,
     private val repository: EntryRepository,
     private val coordinator: ReminderCoordinator,
     private val clock: Clock,
     private val draftHolder: MutableStateFlow<Entry?>,
+    private val reader: ScreenshotReader,
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(CaptureState(text = initialText))
     val state: StateFlow<CaptureState> = mutableState.asStateFlow()
@@ -84,9 +95,33 @@ class CaptureViewModel(
         viewModelScope.launch {
             val target = if (targetId != 0L) repository.get(targetId) else null
             mutableState.update { it.copy(target = target) }
-            if (initialText.isNotBlank()) analyse(initialText)
+            when {
+                initialImage != null -> readImage(initialImage)
+                initialText.isNotBlank() -> analyse(initialText)
+            }
         }
     }
+
+    /** Reads the text in a screenshot or photo, on the device, then looks for plans in it. */
+    fun readImage(uri: Uri) {
+        sourceKind = EntrySource.Kind.SCREENSHOT
+        mutableState.update { it.copy(mode = CaptureMode.READING, imageUnreadable = false) }
+        viewModelScope.launch {
+            val thumbnail = reader.thumbnail(uri)
+            mutableState.update { it.copy(thumbnail = thumbnail) }
+            val message = runCatching { reader.read(uri) }.getOrNull()
+            if (message == null || message.text.isBlank()) {
+                mutableState.update { it.copy(mode = CaptureMode.INPUT, imageUnreadable = true) }
+                return@launch
+            }
+            val writtenAt = message.reference.atZone(clock.zone)
+            mutableState.update { it.copy(text = message.text, writtenAt = writtenAt.takeIf { message.referenceFromScreenshot }) }
+            analyse(message.text)
+        }
+    }
+
+    /** The moment relative dates are read from: when the message was written, or now. */
+    private fun referenceNow(): ZonedDateTime = state.value.writtenAt ?: clock.instant().atZone(clock.zone)
 
     fun setText(text: String) = mutableState.update { it.copy(text = text) }
 
@@ -95,7 +130,7 @@ class CaptureViewModel(
     fun analyse(text: String = state.value.text) {
         if (text.isBlank()) return
         viewModelScope.launch {
-            val now = clock.instant().atZone(clock.zone)
+            val now = referenceNow()
             val target = state.value.target
             val result = parser.parse(text, now)
             when {
@@ -160,7 +195,7 @@ class CaptureViewModel(
 
     /** Switches from "update an existing plan" to "make a new plan" for the same message. */
     fun treatAsNewPlan() {
-        val now = clock.instant().atZone(clock.zone)
+        val now = referenceNow()
         mutableState.update { it.copy(target = null) }
         showDrafts(state.value.text, parser.parse(state.value.text, now, allowChange = false).drafts)
     }

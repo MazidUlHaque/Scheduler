@@ -77,7 +77,11 @@ fun HomeScreen(
     onAddPlan: () -> Unit,
     onOpenSettings: () -> Unit,
     onCapture: (String) -> Unit = {},
+    onCaptureImage: (android.net.Uri) -> Unit = {},
 ) {
+    val images =
+        com.mazidulhaque.kokhon.ui.capture
+            .rememberImageSources(onCaptureImage)
     val context = LocalContext.current
     var choosing by remember { mutableStateOf(false) }
     val clipboard = rememberClipboardOffer()
@@ -175,6 +179,14 @@ fun HomeScreen(
             onType = {
                 choosing = false
                 onAddPlan()
+            },
+            onScreenshot = {
+                choosing = false
+                images.pickScreenshot()
+            },
+            onPhoto = {
+                choosing = false
+                images.takePhoto()
             },
         )
     }

@@ -103,10 +103,11 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - Delivered: `core:parser` (English and common Banglish: kal, aj, porshu, rat, sokal, bikal, sondha, "9.30e", "5tay"), update matcher, share target, paste with a copied-message suggestion, highlighted review sheet, AM/PM choice, several plans per message, targeted and central updates, per-plan history. The test corpus has 61 parser/matcher tests covering ~70 phrases; it grows with every reported parsing issue towards the 300+ target.
 - **Exit:** "let's try to sit for a meeting tomorrow around 9:30 pm" → Meeting, tomorrow, 21:30, approximate. Three taps from WhatsApp. Sharing "let's make it 10 pm instead" then offers to update that same meeting.
 
-### Phase 3 - Screenshot capture
+### Phase 3 - Screenshot capture ✅
 - ML Kit OCR, chat cleanup, reference-date detection
 - Share target for images, Photo Picker, camera
 - Optional screenshot auto-detect
+- Delivered: `core:ocr` (ML Kit bundled model, offline), screenshot cleanup in `core:parser` (status bar, receipts, timestamps, typing box, date headers, wrapped lines), "message was sent yesterday" reference dates, Photo Picker, camera via the system camera app, sharing images to Kokhon, and screenshots in "Update from a message". Automatic screenshot detection moves to Phase 4 (it needs a media permission and should stay opt-in).
 - **Exit:** a WhatsApp or Messenger screenshot produces the same result as Phase 2
 
 ### Phase 4 - Smart reminders & UX polish

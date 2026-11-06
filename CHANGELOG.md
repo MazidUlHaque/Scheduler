@@ -8,6 +8,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- Phase 3: make or update plans from screenshots and photos (Add a plan > From a screenshot / Take a photo, share an image to Kokhon, Pick a screenshot when updating)
+- On-device text recognition (ML Kit bundled model): nothing is uploaded
+- Chat screenshot cleanup: status bar, read receipts, timestamps, date headers and typing box removed; wrapped lines joined
+- Dates are read from when the message was sent ("tomorrow" in yesterday's message means today)
 - Phase 2: make plans from pasted or shared messages (share sheet "Make it a plan", "Add a plan" > "Paste a message", copied-message suggestion)
 - On-device message parser: relative dates, weekdays, explicit dates, times, ranges, "in 2 hours", approximate words, plan types, people, places, importance, several plans per message, common Banglish
 - Review sheet with highlighted understood words (tap to fix), AM/PM choice for ambiguous times, -15 / +15 nudges

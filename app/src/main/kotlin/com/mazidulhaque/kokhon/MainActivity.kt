@@ -5,6 +5,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.core.content.IntentCompat
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonTheme
 import com.mazidulhaque.kokhon.navigation.KokhonNavHost
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,13 +17,16 @@ class MainActivity : ComponentActivity() {
     /** Text shared from another app, to be turned into a plan. */
     private val sharedText = MutableStateFlow<String?>(null)
 
+    /** A screenshot shared from another app. */
+    private val sharedImage = MutableStateFlow<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handle(intent)
         setContent {
             KokhonTheme {
-                KokhonNavHost(entryToOpen = entryToOpen, sharedText = sharedText)
+                KokhonNavHost(entryToOpen = entryToOpen, sharedText = sharedText, sharedImage = sharedImage)
             }
         }
     }
@@ -39,6 +43,11 @@ class MainActivity : ComponentActivity() {
             }
 
             Intent.ACTION_SEND -> {
+                if (intent.type?.startsWith("image/") == true) {
+                    val uri = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, android.net.Uri::class.java)
+                    sharedImage.value = uri?.toString()
+                    return
+                }
                 val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
                 val text = intent.getStringExtra(Intent.EXTRA_TEXT)
                 sharedText.value = listOfNotNull(subject, text).joinToString("\n").takeIf { it.isNotBlank() }

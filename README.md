@@ -57,6 +57,7 @@ Every push and pull request runs the same checks on GitHub Actions, and the debu
 app/                  Application, activity, screens
 core/model/           Pure Kotlin domain: entries, importance, reminder chains, reminder planning
 core/parser/          Pure Kotlin message parser and update matcher (English + Banglish), heavily tested
+core/ocr/             On-device text recognition (ML Kit, bundled model) for screenshots and photos
 core/data/            Room database (plans and their history) and settings (DataStore)
 core/alarm/           Exact alarms, notifications, the ringing service and the alarm screen
 core/designsystem/    Colours, typography, theme, icons and shared components
@@ -75,7 +76,7 @@ docs/                 Requirements, plan and design decisions
 - [x] Phase 0: Project foundation, design system & CI
 - [x] Phase 1: Manual scheduling + reliable reminders & alarms
 - [x] Phase 2: Text capture (paste / share) with smart parsing
-- [ ] Phase 3: Screenshot capture (on-device OCR)
+- [x] Phase 3: Screenshot capture (on-device OCR)
 - [ ] Phase 4: Smart reminders, widgets, UX polish
 - [ ] Phase 5: Release on Google Play
 

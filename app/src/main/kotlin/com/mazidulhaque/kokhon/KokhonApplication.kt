@@ -10,6 +10,7 @@ import com.mazidulhaque.kokhon.core.alarm.ReminderNotifier
 import com.mazidulhaque.kokhon.core.data.repository.createEntryRepository
 import com.mazidulhaque.kokhon.core.data.settings.SettingsRepository
 import com.mazidulhaque.kokhon.core.model.Entry
+import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ParserConfig
 import com.mazidulhaque.kokhon.core.parser.PlanParser
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -35,6 +36,8 @@ class KokhonApplication :
         val fridayWeekend = setOf("Asia/Dhaka", "Asia/Riyadh", "Asia/Kuwait", "Asia/Qatar", "Asia/Bahrain", "Asia/Muscat")
         PlanParser(ParserConfig(weekendStart = if (clock.zone.id in fridayWeekend) DayOfWeek.FRIDAY else DayOfWeek.SATURDAY))
     }
+
+    val screenshotReader by lazy { ScreenshotReader(this, clock) }
 
     /** A plan found in a message that the user wants to finish in the full editor. */
     val captureDraft = MutableStateFlow<Entry?>(null)

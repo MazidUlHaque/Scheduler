@@ -46,7 +46,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -96,6 +98,7 @@ import java.time.ZoneOffset
 @Composable
 fun CaptureScreen(
     initialText: String,
+    initialImage: String = "",
     source: EntrySource.Kind,
     targetId: Long,
     onClose: () -> Unit,
@@ -106,16 +109,18 @@ fun CaptureScreen(
 ) {
     val app = kokhonApp()
     val vm: CaptureViewModel =
-        viewModel(key = "capture-$targetId-${initialText.hashCode()}") {
+        viewModel(key = "capture-$targetId-${initialText.hashCode()}-$initialImage") {
             CaptureViewModel(
-                initialText,
-                source,
-                targetId,
-                app.planParser,
-                app.entryRepository,
-                app.reminderCoordinator,
-                app.clock,
-                app.captureDraft,
+                initialText = initialText,
+                initialImage = initialImage.takeIf { it.isNotBlank() }?.let(android.net.Uri::parse),
+                sourceKind = source,
+                targetId = targetId,
+                parser = app.planParser,
+                repository = app.entryRepository,
+                coordinator = app.reminderCoordinator,
+                clock = app.clock,
+                draftHolder = app.captureDraft,
+                reader = app.screenshotReader,
             )
         }
     val state by vm.state.collectAsStateWithLifecycle()
@@ -146,6 +151,7 @@ fun CaptureScreen(
         }
         when (state.mode) {
             CaptureMode.INPUT -> InputContent(state, vm)
+            CaptureMode.READING -> ReadingContent(state)
             CaptureMode.CREATE -> CreateContent(state, vm, onEditDraft)
             CaptureMode.UPDATE -> UpdateContent(state, vm, onClose)
             CaptureMode.NOTHING_TO_CHANGE -> NothingToChange(state, vm, onEditEntry)
@@ -160,10 +166,14 @@ private fun androidx.compose.foundation.layout.ColumnScope.InputContent(
     vm: CaptureViewModel,
 ) {
     val context = LocalContext.current
+    val images = rememberImageSources(vm::readImage)
     Column(
-        modifier = Modifier.weight(1f).padding(horizontal = 22.dp, vertical = 12.dp),
+        modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
+        if (state.imageUnreadable) {
+            Text(stringResource(R.string.image_unreadable), style = MaterialTheme.typography.bodyMedium, color = KokhonColors.StopText)
+        }
         OutlinedTextField(
             value = state.text,
             onValueChange = vm::setText,
@@ -184,7 +194,17 @@ private fun androidx.compose.foundation.layout.ColumnScope.InputContent(
                         ?.toString()
                 if (!pasted.isNullOrBlank()) vm.setText(pasted)
             },
+            modifier = Modifier.fillMaxWidth(),
         )
+        Text(stringResource(R.string.or), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            KokhonSecondaryButton(
+                text = stringResource(R.string.pick_screenshot),
+                onClick = images.pickScreenshot,
+                modifier = Modifier.weight(1f),
+            )
+            KokhonSecondaryButton(text = stringResource(R.string.take_photo), onClick = images.takePhoto, modifier = Modifier.weight(1f))
+        }
     }
     KokhonPrimaryButton(
         text = stringResource(R.string.find_the_plan),
@@ -192,6 +212,57 @@ private fun androidx.compose.foundation.layout.ColumnScope.InputContent(
         enabled = state.text.isNotBlank(),
         modifier = Modifier.padding(horizontal = 22.dp, vertical = 12.dp),
     )
+}
+
+@Composable
+private fun androidx.compose.foundation.layout.ColumnScope.ReadingContent(state: CaptureState) {
+    Column(
+        modifier = Modifier.weight(1f).fillMaxWidth().padding(22.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
+    ) {
+        state.thumbnail?.let { Thumbnail(it, maxHeight = 320) }
+        androidx.compose.material3.CircularProgressIndicator()
+        Text(stringResource(R.string.reading_screenshot), style = MaterialTheme.typography.titleMedium)
+        Text(
+            stringResource(R.string.reading_screenshot_desc),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+}
+
+@Composable
+private fun Thumbnail(
+    bitmap: android.graphics.Bitmap,
+    maxHeight: Int,
+) {
+    androidx.compose.foundation.Image(
+        bitmap = bitmap.asImageBitmap(),
+        contentDescription = stringResource(R.string.screenshot_preview_cd),
+        modifier =
+            Modifier.heightIn(max = maxHeight.dp).clip(
+                androidx.compose.foundation.shape
+                    .RoundedCornerShape(12.dp),
+            ),
+    )
+}
+
+/** Where the text came from: the screenshot preview and, when known, when the message was sent. */
+@Composable
+private fun SourceInfo(state: CaptureState) {
+    val context = LocalContext.current
+    Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+        state.thumbnail?.let { Thumbnail(it, maxHeight = 96) }
+        state.writtenAt?.let { at ->
+            Text(
+                stringResource(R.string.written_at, TimeFormat.shortDate(at.toInstant()) + ", " + TimeFormat.time(context, at.toInstant())),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+        }
+    }
 }
 
 /** The message with understood words marked like a highlighter pen; guesses are underlined in amber. */
@@ -261,6 +332,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (state.thumbnail != null || state.writtenAt != null) SourceInfo(state)
         HighlightedMessage(state.text, draft.parsed.spans) { span ->
             when (span.kind) {
                 SpanKind.DATE -> pickingDate = true
@@ -540,6 +612,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.UpdateContent(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
+        if (state.thumbnail != null || state.writtenAt != null) SourceInfo(state)
         HighlightedMessage(state.text, state.spans) {}
 
         val newStart = best.newStart
