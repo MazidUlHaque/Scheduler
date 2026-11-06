@@ -15,8 +15,22 @@ keytool -genkeypair -v \
 ```
 
 It asks for a password and your name. **Keep `kokhon-release.jks` and its password safe and backed up** (for example in a
-password manager and an offline copy). If you lose them you can never update the app on Google Play.
-Never commit the file: `*.jks` is already in `.gitignore`.
+password manager and an offline copy). Never commit the file: `*.jks` is already in `.gitignore`.
+
+Why it matters:
+- **Google Play** uses Play App Signing for new apps: Google keeps the real app signing key and yours is the *upload key*.
+  If you lose the upload key, you can ask Google to reset it in Play Console, so it is not permanent, but it takes time.
+- **The APK on GitHub Releases** is signed with this key directly. An APK signed with a different key will not install
+  over an existing one, so friends would have to uninstall (and lose their plans unless they made a backup).
+
+**Already have a keystore for another app?** Use a separate key for Kokhon, so a problem with one app never affects the
+other. You can keep it in the same file under its own alias:
+
+```bash
+keytool -genkeypair -v -keystore your-existing.jks -alias kokhon -keyalg RSA -keysize 4096 -validity 10000
+```
+
+GitHub secrets belong to one repository, so add the four secrets below to this repository either way.
 
 ## 2. Add the key to GitHub (once)
 
