@@ -12,7 +12,7 @@
 <!-- Required for UI changes: light + dark -->
 
 ## Checklist
-- [ ] `./gradlew spotlessCheck detekt lint testDebugUnitTest` passes
+- [ ] `./gradlew spotlessCheck lint test assembleDebug` passes
 - [ ] Tests added/updated (parser changes need new test phrases)
 - [ ] CHANGELOG.md updated under *Unreleased*
 - [ ] Accessibility checked (TalkBack labels, font scaling)

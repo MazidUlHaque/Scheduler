@@ -1,59 +1,78 @@
 <div align="center">
 
-# 📅 Scheduler
+# Kokhon
+
+### Know When
 
 **Turn any chat message or screenshot into a reminder in seconds.**
 
-Paste it, share it, or screenshot it. Scheduler works out the *what*, *when* and *where*, then makes sure you don't forget.
+Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *what*, *when* and *where*, then makes sure you don't forget.
 
-![Platform](https://img.shields.io/badge/platform-Android-3DDC84?logo=android&logoColor=white)
+![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)
-![Status](https://img.shields.io/badge/status-planning-orange)
+![CI](https://github.com/MazidUlHaque/Scheduler/actions/workflows/ci.yml/badge.svg)
+![Status](https://img.shields.io/badge/status-in%20development-orange)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)
 
 </div>
 
 ---
 
-## ✨ Highlights
+## Highlights
 
 | | Feature | Description |
 |---|---|---|
-| 📋 | **Paste & share capture** | Share *"let's sit for a meeting tomorrow around 9:30 pm"* from WhatsApp or any app. You get a Meeting tomorrow at 21:30. |
-| 📸 | **Screenshot capture** | On-device OCR reads chat screenshots and turns them into entries |
-| 🔍 | **Shows what it understood** | Highlighted chips show exactly what was detected. Tap any chip to fix it. |
-| 🎚️ | **Importance levels & reminder chains** | The app suggests how important a plan is and a matching chain (e.g. 30 → 15 → 5 min). Accept it in one tap or change anything. |
-| ⏰ | **Calm, clear alarms** | Big Stop and Snooze buttons, a ring limit, "I'm aware — no more reminders", and a discreet vibrate-only mode |
-| ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and the app updates the existing entry. |
-| 🍽️ | **Reminders per event type** | Dinner dates get a "get ready" and a "leave now" reminder; tours get a packing checklist |
-| 🩺 | **Reliability Doctor** | Detects battery-optimisation and permission problems that silently kill reminders |
-| 🔒 | **Private by design** | OCR and parsing run on your phone. No account and no cloud needed. |
+| 📋 | **Paste & share capture** | Share *"let's sit for a meeting tomorrow around 9:30 pm"* from any chat app. You get a Meeting tomorrow at 9:30 PM. |
+| 📸 | **Screenshot capture** | On-device text recognition reads chat screenshots and turns them into plans |
+| 🖍️ | **Shows what it understood** | Understood words are marked like a highlighter pen. Tap any word to fix it. |
+| 🎚️ | **Importance levels & reminder chains** | Kokhon suggests how important a plan is and a matching chain (e.g. 30, 15 and 5 min before). Accept it in one tap or change anything. |
+| ⏰ | **Calm, clear alarms** | A big Stop button, a separate Snooze, a ring limit, "I'm aware - no more reminders", and a discreet vibrate-only mode |
+| ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and Kokhon updates the existing plan. |
+| 🔒 | **Private by design** | Text recognition and parsing run on your phone. No account and no cloud needed. |
 
-## 📚 Documentation
+## Build & run
 
-- [Requirement Analysis](docs/requirements-analysis.md): market scan, gaps, unique features, requirements
-- [Development Plan & Architecture](docs/development-plan.md): tech stack, modules, roadmap
+Requirements: JDK 21 and the Android SDK (platform 37). Android Studio installs both.
+
+```bash
+./gradlew assembleDebug        # build the debug APK -> app/build/outputs/apk/debug/
+./gradlew installDebug         # install on a connected device or emulator
+./gradlew test                 # unit tests
+./gradlew spotlessApply lint   # format code and run Android Lint
+```
+
+Every push and pull request runs the same checks on GitHub Actions, and the debug APK is attached to each run.
+
+## Project structure
+
+```
+app/                  Application, activity, screens
+core/model/           Pure Kotlin domain: entries, importance, reminder chains (unit-tested)
+core/designsystem/    Colours, typography, theme and shared components
+docs/                 Requirements, plan and design decisions
+```
+
+## Documentation
+
+- [Requirement Analysis](docs/requirements-analysis.md): market scan, gaps, unique features, requirements, HCI principles
+- [Development Plan & Architecture](docs/development-plan.md): tech stack, modules, roadmap, visual identity
 - [Changelog](CHANGELOG.md)
 
-## 🛠️ Tech stack
-
-Kotlin · Jetpack Compose · Material 3 · Hilt · Room · Coroutines/Flow · AlarmManager · WorkManager · ML Kit (OCR) · Glance
-
-## 🗺️ Roadmap
+## Roadmap
 
 - [x] Requirement analysis & plan
-- [ ] Phase 0: Project foundation & CI
+- [x] Phase 0: Project foundation, design system & CI
 - [ ] Phase 1: Manual scheduling + reliable reminders & alarms
 - [ ] Phase 2: Text capture (paste / share) with smart parsing
 - [ ] Phase 3: Screenshot capture (on-device OCR)
 - [ ] Phase 4: Smart reminders, widgets, UX polish
 - [ ] Phase 5: Release on Google Play
 
-## 🤝 Contributing
+## Contributing
 
 Bug reports and ideas are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md) first.
 
-## 📄 License & credit
+## License & credit
 
 **Copyright © 2026 Md. Mazid-Ul-Haque. All Rights Reserved.**
 
@@ -61,4 +80,4 @@ Bug reports and ideas are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md
 - 👀 The source code is public **to view only**.
 - ❌ Copying, modifying, redistributing or using the code commercially requires **written permission** from the author.
 
-See [LICENSE](LICENSE) for the full terms.
+See [LICENSE](LICENSE) for the full terms. The bundled Atkinson Hyperlegible font is © Braille Institute of America, used under the [SIL Open Font License](third_party/atkinson-hyperlegible/OFL.txt).

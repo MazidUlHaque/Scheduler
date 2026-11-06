@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for your interest in Scheduler!
+Thanks for your interest in Kokhon!
 
 ## Ground rules
 - This is an **All Rights Reserved** project. By submitting a contribution, you
@@ -15,11 +15,12 @@ Use the issue templates. For bugs, include your device, Android version and step
 2. Follow [Conventional Commits](https://www.conventionalcommits.org/), e.g. `feat(parser): support "day after tomorrow"`.
 3. Run checks locally before pushing:
    ```bash
-   ./gradlew spotlessCheck detekt lint testDebugUnitTest
+   ./gradlew spotlessCheck lint test assembleDebug
    ```
 4. Open a pull request using the template. CI must pass.
 
 ## Code style
-- Kotlin official style (enforced by ktlint via Spotless) and detekt rules.
+- Kotlin official style, enforced by ktlint through Spotless (`./gradlew spotlessApply` fixes most issues).
+- Use regular hyphens (-) in user-facing text, not em dashes.
 - Compose: stateless composables + state hoisting; previews for every screen component.
 - Every parser change must come with unit tests.

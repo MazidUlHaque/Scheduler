@@ -14,7 +14,7 @@ body:
     attributes:
       label: Steps to reproduce
       placeholder: |
-        1. Share the text "..." to Scheduler
+        1. Share the text "..." to Kokhon
         2. ...
     validations:
       required: true

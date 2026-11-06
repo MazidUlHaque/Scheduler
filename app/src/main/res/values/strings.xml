@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kokhon</string>
+    <string name="tagline">Know When</string>
+
+    <string name="greeting_morning">Good morning</string>
+    <string name="greeting_afternoon">Good afternoon</string>
+    <string name="greeting_evening">Good evening</string>
+    <string name="status_no_plans">No plans yet. Copy a message with a plan, or add one yourself.</string>
+    <string name="now">Now</string>
+    <string name="empty_title">Your day is clear</string>
+    <string name="empty_body">Paste a chat message like "let\'s meet tomorrow at 9:30 pm" and Kokhon will turn it into a plan with reminders.</string>
+    <string name="add_a_plan">Add a plan</string>
+    <string name="calendar">Calendar</string>
+    <string name="settings">Settings</string>
+</resources>

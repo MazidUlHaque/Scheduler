@@ -1,4 +1,4 @@
-# Requirement Analysis — Scheduler (working name)
+# Requirement Analysis - Kokhon
 
 > Status: Draft v2 · Author: Md. Mazid-Ul-Haque · Last updated: 2026-11-06
 >
@@ -29,7 +29,7 @@ should take seconds and look good doing it.
 | S5 | Event types | meeting, event, task, dinner, tour, match, dinner date, birthday… | Each type gets a sensible default reminder profile |
 | S6 | Must-not-miss | e.g. early flight, match kickoff | Full-screen alarm with sound, plus escalation |
 
-## 3. Market scan — what regular schedulers do
+## 3. Market scan - what regular schedulers do
 
 Apps looked at: Google Calendar, Samsung Calendar, Todoist, TickTick, Any.do,
 Microsoft To Do, Structured, Alarmy, plus Fantastical on iOS as the benchmark for
@@ -69,7 +69,7 @@ natural-language input.
 2. **Show what was understood:** the source text is shown with highlighted chips (`tomorrow → Sat, 7 Nov`, `9:30 pm → 21:30`, `meeting → Meeting`). Tapping a chip fixes that one piece.
 3. **Handle ambiguity explicitly:** confidence scoring, a one-tap choice when the app is unsure ("9:30 AM or PM?"), and an *approximate* flag for words like "around" or "maybe".
 4. **Importance level → reminder chain:** the app suggests an importance level (Low / Normal / Important / Critical) from the text and event type, and each level comes with a matching reminder chain. You accept with one tap or change anything. Example of an Important chain: 30 min (notification) → 15 min (notification) → 5 min (alarm).
-5. **Calm, unmistakable alarm screen:** Stop and Snooze are big, different-coloured, clearly labelled buttons. Ringing has a time limit. A Discreet mode (vibrate only) avoids awkward moments, and an "I'm aware — no more reminders" button silences the rest of the chain.
+5. **Calm, unmistakable alarm screen:** Stop and Snooze are big, different-coloured, clearly labelled buttons. Ringing has a time limit. A Discreet mode (vibrate only) avoids awkward moments, and an "I'm aware - no more reminders" button silences the rest of the chain.
 6. **Update from a new message:** share the changed message ("let's do 10 pm instead") and the app finds the existing event and shows what will change, instead of creating a duplicate.
 7. **Full control:** edit, rename, reschedule, change type or importance, turn reminders off, duplicate or delete any entry, with undo.
 8. **Reliability Doctor:** checks exact-alarm permission, notification channels, battery optimisation and OEM autostart, then walks you through fixing each one.
@@ -104,7 +104,7 @@ natural-language input.
 - FR-2.7 One message containing several plans → several draft entries.
 - FR-2.8 Every parse goes through a preview screen. Nothing is saved silently.
 - FR-2.9 Parsing works offline.
-- FR-2.10 **Update from new text** — two ways in, one review screen:
+- FR-2.10 **Update from new text** - two ways in, one review screen:
   - **a. Targeted update:** select an entry first, choose *Update from message*, then paste the text or pick a screenshot. Only that entry is compared.
   - **b. Central capture:** paste or share a message normally. If it looks like a change (words like "move", "shift", "instead", "postpone", "cancel", "make it", or the same type, people or title within a nearby time window), the preview lists **all matched entries**, ranked by how well they match, each with its match reason.
   - For each candidate, a **before → after** diff of every changed field (date, time, place, title, importance), with the app's suggested choice preselected.
@@ -148,8 +148,8 @@ natural-language input.
 - **Stop** and **Snooze** are two large, clearly labelled buttons with different colours and icons. No swipe gestures, no ambiguity.
   - **Stop** = "stop this reminder" (the rest of the chain still fires).
   - **Snooze** shows its length in the label ("Snooze 5 min").
-- A third, clearly separated action: **"I'm aware — turn off remaining reminders"** for this entry.
-- The screen shows the title, time, and *what happens next* ("Next reminder: 5 min before — alarm").
+- A third, clearly separated action: **"I'm aware - turn off remaining reminders"** for this entry.
+- The screen shows the title, time, and *what happens next* ("Next reminder: 5 min before - alarm").
 - Pressing a **volume or power button** silences the sound immediately without dismissing, so you can step away calmly before choosing Stop or Snooze. Configurable.
 - **Ring limit:** an alarm rings for at most *N* seconds (default 60, configurable), then becomes a silent notification. It never rings forever.
 - **Auto-snooze limit:** maximum number of snoozes (configurable, default 3), then it stops.
@@ -188,7 +188,7 @@ natural-language input.
 
 | Area | Requirement |
 |------|-------------|
-| Platform | Android 8.0+ (minSdk 26), targetSdk 36 |
+| Platform | Android 8.0+ (minSdk 26), compileSdk and targetSdk 37 |
 | UI | Jetpack Compose, Material 3 with dynamic colour (Material You), light and dark themes, motion, haptics |
 | Accessibility | TalkBack labels, 48dp touch targets, font scaling up to 200%, WCAG AA contrast |
 | Performance | Cold start under 1 s on a mid-range device; text parse under 50 ms; OCR plus parse under 1.5 s |
@@ -207,7 +207,7 @@ natural-language input.
 | 3 | **Keep context** | Capturing or updating from a chat opens a half-height sheet over the chat, not a new screen. |
 | 4 | **Visible system status** | One plain sentence says where you are: "2 plans left today. Next is Dinner in 1 h 20 min." |
 | 5 | **Show what was understood** | Parsed words are marked like a highlighter pen. Solid = understood, dashed = a guess. Tapping a word changes it. |
-| 6 | **Recognition over recall** | Options explain their effect ("Important — three reminders, the last one rings"). Time is nudged with −15 / +15 instead of typed. |
+| 6 | **Recognition over recall** | Options explain their effect ("Important - three reminders, the last one rings"). Time is nudged with −15 / +15 instead of typed. |
 | 7 | **Fewer choices per step (Hick's law)** | Each screen has one primary button. Rare settings are folded away (progressive disclosure). |
 | 8 | **Error prevention on alarms** | Stop and Snooze differ in size, colour, shape and position. Each button says what happens next. A volume press silences first, so the user can decide calmly. Ringing has a time limit. |
 | 9 | **User control & freedom** | Every suggestion can be changed. Delete and update come with Undo. Nothing is overwritten without a confirmation question. |
