@@ -30,6 +30,14 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 | ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and Kokhon updates the existing plan. |
 | 🔒 | **Private by design** | Text recognition and parsing run on your phone. No account and no cloud needed. |
 
+## Screenshots
+
+| Home timeline | Alarm |
+|---|---|
+| <img src="docs/screenshots/home.png" width="280" alt="Home timeline with the Now line, a completed plan above it and upcoming plans below"> | <img src="docs/screenshots/alarm.png" width="280" alt="Alarm screen with a large red Stop button and a separate Snooze button"> |
+
+Screenshots are rendered from the real UI by the test suite (`./gradlew :app:testDebugUnitTest`, output in `app/build/screenshots/`).
+
 ## Build & run
 
 Requirements: JDK 21 and the Android SDK (platform 37). Android Studio installs both.
@@ -47,8 +55,10 @@ Every push and pull request runs the same checks on GitHub Actions, and the debu
 
 ```
 app/                  Application, activity, screens
-core/model/           Pure Kotlin domain: entries, importance, reminder chains (unit-tested)
-core/designsystem/    Colours, typography, theme and shared components
+core/model/           Pure Kotlin domain: entries, importance, reminder chains, reminder planning
+core/data/            Room database and settings (DataStore)
+core/alarm/           Exact alarms, notifications, the ringing service and the alarm screen
+core/designsystem/    Colours, typography, theme, icons and shared components
 docs/                 Requirements, plan and design decisions
 ```
 
@@ -62,7 +72,7 @@ docs/                 Requirements, plan and design decisions
 
 - [x] Requirement analysis & plan
 - [x] Phase 0: Project foundation, design system & CI
-- [ ] Phase 1: Manual scheduling + reliable reminders & alarms
+- [x] Phase 1: Manual scheduling + reliable reminders & alarms
 - [ ] Phase 2: Text capture (paste / share) with smart parsing
 - [ ] Phase 3: Screenshot capture (on-device OCR)
 - [ ] Phase 4: Smart reminders, widgets, UX polish

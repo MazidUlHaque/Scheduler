@@ -1,21 +1,42 @@
 package com.mazidulhaque.kokhon
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonTheme
-import com.mazidulhaque.kokhon.ui.home.HomeScreen
+import com.mazidulhaque.kokhon.navigation.KokhonNavHost
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class MainActivity : ComponentActivity() {
+    /** An entry to open, set when the app is launched from a notification. */
+    private val entryToOpen = MutableStateFlow<Long?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val clock = (application as KokhonApplication).container.clock
+        handle(intent)
         setContent {
             KokhonTheme {
-                HomeScreen(clock = clock)
+                KokhonNavHost(entryToOpen = entryToOpen)
             }
         }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handle(intent)
+    }
+
+    private fun handle(intent: Intent?) {
+        if (intent?.action == ACTION_OPEN_ENTRY) {
+            entryToOpen.value = intent.getLongExtra(EXTRA_ENTRY_ID, 0).takeIf { it != 0L }
+        }
+    }
+
+    companion object {
+        const val ACTION_OPEN_ENTRY = "com.mazidulhaque.kokhon.action.OPEN_ENTRY"
+        const val EXTRA_ENTRY_ID = "entry_id"
     }
 }

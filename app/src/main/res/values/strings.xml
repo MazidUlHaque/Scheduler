@@ -3,14 +3,179 @@
     <string name="app_name">Kokhon</string>
     <string name="tagline">Know When</string>
 
+    <!-- Home -->
     <string name="greeting_morning">Good morning</string>
     <string name="greeting_afternoon">Good afternoon</string>
     <string name="greeting_evening">Good evening</string>
-    <string name="status_no_plans">No plans yet. Copy a message with a plan, or add one yourself.</string>
+    <string name="greeting_night">Hello, night owl</string>
+    <string name="status_no_plans">No plans yet. Add one yourself, or copy a message with a plan.</string>
+    <string name="status_nothing_left_today">Nothing left today. Next is %1$s %2$s.</string>
+    <string name="status_all_done">All done for now. Nothing else is planned.</string>
+    <plurals name="status_left_today">
+        <item quantity="one">1 plan left today. Next is %2$s in %3$s.</item>
+        <item quantity="other">%1$d plans left today. Next is %2$s in %3$s.</item>
+    </plurals>
+    <string name="status_happening_now">%1$s is happening now.</string>
     <string name="now">Now</string>
     <string name="empty_title">Your day is clear</string>
-    <string name="empty_body">Paste a chat message like "let\'s meet tomorrow at 9:30 pm" and Kokhon will turn it into a plan with reminders.</string>
+    <string name="empty_body">Tap Add a plan to create your first one. Soon you\'ll also be able to paste a chat message like "let\'s meet tomorrow at 9:30 pm".</string>
     <string name="add_a_plan">Add a plan</string>
-    <string name="calendar">Calendar</string>
+    <string name="discreet">Discreet</string>
     <string name="settings">Settings</string>
+    <string name="tomorrow_day">Tomorrow, %1$s</string>
+    <string name="mark_done_cd">Mark %1$s as done</string>
+    <string name="mark_not_done_cd">Mark %1$s as not done</string>
+    <string name="discreet_on_until">Discreet mode is on until %1$s. Alarms only vibrate.</string>
+    <string name="turn_off">Turn off</string>
+    <string name="deleted_entry">Deleted "%1$s"</string>
+    <string name="undo">Undo</string>
+    <string name="approx_prefix">~%1$s</string>
+    <string name="time_is_approximate">time is approximate</string>
+    <string name="status_completed">Completed</string>
+    <string name="status_cancelled">Cancelled</string>
+    <string name="status_missed">Missed</string>
+    <string name="status_upcoming">Upcoming</string>
+    <string name="status_ongoing">Happening now</string>
+    <string name="reminders_off">reminders off</string>
+
+    <!-- Entry types -->
+    <string name="type_meeting">Meeting</string>
+    <string name="type_event">Event</string>
+    <string name="type_task">Task</string>
+    <string name="type_dinner">Dinner</string>
+    <string name="type_dinner_date">Dinner date</string>
+    <string name="type_tour">Tour</string>
+    <string name="type_match">Match</string>
+    <string name="type_birthday">Birthday</string>
+    <string name="type_appointment">Appointment</string>
+    <string name="type_flight">Flight</string>
+    <string name="type_exam">Exam</string>
+    <string name="type_other">Other</string>
+
+    <!-- Importance -->
+    <string name="how_important">How important is it?</string>
+    <string name="importance_low">Low</string>
+    <string name="importance_normal">Normal</string>
+    <string name="importance_important">Important</string>
+    <string name="importance_critical">Critical</string>
+    <string name="importance_low_desc">One quiet notification</string>
+    <string name="importance_normal_desc">One notification, 15 min before</string>
+    <string name="importance_important_desc">Three reminders. The last one rings.</string>
+    <string name="importance_critical_desc">Starts a day before. Rings twice.</string>
+    <string name="importance_custom_desc">Your own reminders</string>
+
+    <!-- Editor -->
+    <string name="new_plan">New plan</string>
+    <string name="edit_plan">Edit plan</string>
+    <string name="name">Name</string>
+    <string name="name_hint">e.g. Team meeting</string>
+    <string name="type">What is it?</string>
+    <string name="earlier_15">15 minutes earlier</string>
+    <string name="later_15">15 minutes later</string>
+    <string name="minus_15">−15</string>
+    <string name="plus_15">+15</string>
+    <string name="about">about</string>
+    <string name="approximate_switch">The time is approximate</string>
+    <string name="approximate_switch_desc">Shown as "about 9:30 PM"</string>
+    <string name="duration">How long?</string>
+    <string name="duration_none">Not set</string>
+    <string name="location">Where (optional)</string>
+    <string name="notes">Notes (optional)</string>
+    <string name="save_plan">Save plan</string>
+    <string name="save_changes">Save changes</string>
+    <string name="title_required">Give the plan a name</string>
+    <string name="in_the_past_warning">This time has already passed. Reminders won\'t ring.</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="customise_reminders">Change reminders</string>
+    <string name="reminder_sentence_none">No reminders for this plan.</string>
+    <string name="reminder_sentence_off">Reminders are turned off for this plan.</string>
+    <string name="reminder_sentence">I\'ll remind you %1$s.</string>
+    <string name="minutes_short">%1$d min</string>
+    <string name="hours_short">%1$d h</string>
+    <plurals name="days_short">
+        <item quantity="one">%1$d day</item>
+        <item quantity="other">%1$d days</item>
+    </plurals>
+
+    <!-- Reminders -->
+    <string name="reminders_for">Reminders for %1$s</string>
+    <string name="reminders">Reminders</string>
+    <string name="before_start">Before %1$s</string>
+    <string name="offset_before">%1$s before</string>
+    <string name="at_start">At the start time</string>
+    <string name="style_silent">Silent</string>
+    <string name="style_notification">Notification</string>
+    <string name="style_heads_up">Pop-up</string>
+    <string name="style_alarm">Alarm (rings)</string>
+    <string name="style_change_hint">Tap the style to change it</string>
+    <string name="add_reminder">+ Add reminder</string>
+    <string name="remove_reminder_cd">Remove the reminder %1$s</string>
+    <string name="choose_when">When should it remind you?</string>
+    <string name="choose_how">How should it remind you?</string>
+    <string name="when_alarm_rings">When the alarm rings</string>
+    <string name="alarm_summary">Up to %1$s · snooze %2$d min, max %3$d · %4$s</string>
+    <string name="volume_silences">volume button silences</string>
+    <string name="volume_does_not_silence">volume button does nothing</string>
+    <string name="turn_off_all_reminders">Turn off all reminders for this plan</string>
+    <string name="turn_on_reminders">Turn reminders back on</string>
+    <string name="done">Done</string>
+
+    <!-- Detail -->
+    <string name="tap_to_rename">Tap the name to rename</string>
+    <string name="rename">Rename</string>
+    <string name="detail_sentence">%1$s at %2$s.</string>
+    <string name="detail_sentence_approx">%1$s at about %2$s.</string>
+    <string name="detail_type_importance">%1$s, %2$s importance.</string>
+    <string name="reminders_on">Reminders on</string>
+    <string name="reminders_off_title">Reminders off</string>
+    <string name="reschedule">Reschedule or edit</string>
+    <string name="change_reminders">Change importance &amp; reminders</string>
+    <string name="duplicate">Duplicate</string>
+    <string name="delete">Delete</string>
+    <string name="you_can_undo">you can undo</string>
+    <string name="cancel_plan">Mark as cancelled</string>
+    <string name="restore_plan">Make it active again</string>
+    <string name="mark_as_done">Mark as done</string>
+    <string name="mark_not_done">Mark as not done</string>
+    <string name="original_message">Made from this message</string>
+    <string name="where">Where: %1$s</string>
+    <string name="copy_suffix">%1$s (copy)</string>
+
+    <!-- Settings -->
+    <string name="alarm_settings">Alarms</string>
+    <string name="ring_limit">Ring for at most</string>
+    <string name="snooze_length">Snooze length</string>
+    <string name="max_snoozes">Maximum snoozes</string>
+    <string name="volume_button_setting">Volume button silences the alarm</string>
+    <string name="volume_button_setting_desc">Silences without dismissing, so you can decide calmly</string>
+    <string name="gentle_start_setting">Start quiet, then get louder</string>
+    <string name="critical_bypass_setting">Critical plans may ring on silent</string>
+    <string name="critical_bypass_setting_desc">Otherwise alarms only vibrate when your phone is on silent or Do Not Disturb</string>
+    <string name="discreet_mode">Discreet mode</string>
+    <string name="discreet_mode_desc">Alarms only vibrate. Useful in meetings, prayers or the cinema.</string>
+    <string name="discreet_off">Off</string>
+    <string name="discreet_1h">1 hour</string>
+    <string name="discreet_2h">2 hours</string>
+    <string name="discreet_until_morning">Until 7 AM</string>
+    <string name="reliability">Will my reminders arrive?</string>
+    <string name="reliability_desc">Android can block reminders to save battery. Fix anything marked below.</string>
+    <string name="check_notifications">Notifications are allowed</string>
+    <string name="check_exact_alarms">Reminders can ring at the exact time</string>
+    <string name="check_full_screen">Alarms can show over the lock screen</string>
+    <string name="check_battery">Battery saver won\'t stop reminders</string>
+    <string name="fix">Fix</string>
+    <string name="ok_check">OK</string>
+    <plurals name="seconds_value">
+        <item quantity="one">%1$d second</item>
+        <item quantity="other">%1$d seconds</item>
+    </plurals>
+    <plurals name="minutes_value">
+        <item quantity="one">%1$d minute</item>
+        <item quantity="other">%1$d minutes</item>
+    </plurals>
+    <string name="about_app">About</string>
+    <string name="copyright">© 2026 Md. Mazid-Ul-Haque. All rights reserved.</string>
+    <string name="version">Version %1$s</string>
+    <string name="back">Back</string>
 </resources>

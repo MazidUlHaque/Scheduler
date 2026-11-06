@@ -81,7 +81,7 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - CI: formatting (ktlint), Android Lint, unit tests, debug APK artifact
 - **Exit:** the app launches and shows a themed empty state; CI passes
 
-### Phase 1 - MVP: manual scheduling + reliable, controllable reminders
+### Phase 1 - MVP: manual scheduling + reliable, controllable reminders ✅
 - Domain model and Room schema (with migrations): Entry, ImportanceLevel, ReminderChain, ReminderStep, ChainPreset
 - Timeline home screen with status styling (completed = faded + green check, in a collapsible "Done" section); editor with full control (edit, rename, reschedule, change type/importance, duplicate, cancel, delete, undo)
 - Importance levels with default reminder chains; per-entry chain editor; saved presets
@@ -90,6 +90,7 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - **Alarm screen:** big, clearly labelled Stop and Snooze buttons; "I'm aware - turn off remaining reminders"; volume button silences; ring limit; snooze limit; volume ramp
 - Discreet mode toggle; respect for Do Not Disturb and ringer mode
 - Permissions requested at the moment they're needed
+- Delivered: everything above except saved reminder presets (moved to Phase 4) and per-entry edit history (moved to Phase 2, where updates from messages need it). Feature screens live in the `app` module for now and move to `feature:*` modules when they grow.
 - **Exit:** an Important entry fires 30 → 15 → 5 min reminders on time (also after a reboot); the alarm can be stopped by anyone on the first try; turning reminders off for an entry silences its whole chain
 
 ### Phase 2 - Text capture (paste + share)

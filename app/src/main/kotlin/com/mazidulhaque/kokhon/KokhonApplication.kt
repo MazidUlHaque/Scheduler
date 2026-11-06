@@ -1,17 +1,46 @@
 package com.mazidulhaque.kokhon
 
 import android.app.Application
+import android.content.Context
+import android.content.Intent
+import com.mazidulhaque.kokhon.core.alarm.AlarmScheduler
+import com.mazidulhaque.kokhon.core.alarm.ReminderCoordinator
+import com.mazidulhaque.kokhon.core.alarm.ReminderHost
+import com.mazidulhaque.kokhon.core.alarm.ReminderNotifier
+import com.mazidulhaque.kokhon.core.data.repository.createEntryRepository
+import com.mazidulhaque.kokhon.core.data.settings.SettingsRepository
+import com.mazidulhaque.kokhon.core.model.Entry
+import kotlinx.coroutines.flow.MutableStateFlow
+import java.time.Clock
 
 /**
- * Application entry point. Dependencies are wired by hand through [AppContainer]
- * instead of a DI framework: the graph is small, and this keeps builds fast.
+ * Application entry point and the app's object graph. Dependencies are wired by hand:
+ * the graph is small, and avoiding a DI framework keeps builds fast.
  */
-class KokhonApplication : Application() {
-    lateinit var container: AppContainer
-        private set
+class KokhonApplication :
+    Application(),
+    ReminderHost {
+    override val clock: Clock = Clock.systemDefaultZone()
+
+    override val entryRepository by lazy { createEntryRepository(this, clock) }
+    override val settingsRepository by lazy { SettingsRepository(this) }
+    override val alarmScheduler by lazy { AlarmScheduler(this, clock) }
+    override val reminderCoordinator by lazy { ReminderCoordinator(this, entryRepository, alarmScheduler, clock) }
+
+    /** The most recently deleted entry, offered for Undo on the home screen. */
+    val pendingUndo = MutableStateFlow<Entry?>(null)
 
     override fun onCreate() {
         super.onCreate()
-        container = AppContainer(this)
+        ReminderNotifier.ensureChannels(this)
     }
+
+    override fun openEntryIntent(
+        context: Context,
+        entryId: Long,
+    ): Intent =
+        Intent(context, MainActivity::class.java)
+            .setAction(MainActivity.ACTION_OPEN_ENTRY)
+            .putExtra(MainActivity.EXTRA_ENTRY_ID, entryId)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
 }
