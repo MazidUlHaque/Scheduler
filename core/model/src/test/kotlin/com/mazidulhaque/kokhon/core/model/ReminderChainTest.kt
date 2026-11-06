@@ -55,6 +55,28 @@ class ReminderChainTest {
     }
 
     @Test
+    fun `a dinner date gets get-ready and time-to-leave reminders`() {
+        val steps = ReminderChain.defaultFor(Importance.IMPORTANT, EntryType.DINNER_DATE).orderedSteps
+        assertEquals(listOf(120L, 45L, 30L, 15L, 5L), steps.map { it.offset.toMinutes() })
+        assertEquals(ReminderPurpose.GET_READY, steps[0].purpose)
+        assertEquals(ReminderPurpose.LEAVE_NOW, steps[1].purpose)
+    }
+
+    @Test
+    fun `a profile step at the same time labels the existing step and keeps the louder style`() {
+        val steps = ReminderChain.defaultFor(Importance.CRITICAL, EntryType.EXAM).orderedSteps
+        val hourBefore = steps.single { it.offset == Duration.ofHours(1) }
+        assertEquals(ReminderPurpose.LEAVE_NOW, hourBefore.purpose)
+        assertEquals(ReminderStyle.HEADS_UP, hourBefore.style)
+        assertEquals(ReminderPurpose.PREPARE, steps.single { it.offset == Duration.ofDays(1) }.purpose)
+    }
+
+    @Test
+    fun `low importance stays a single quiet reminder`() {
+        assertEquals(1, ReminderChain.defaultFor(Importance.LOW, EntryType.TOUR).steps.size)
+    }
+
+    @Test
     fun `negative offsets are rejected`() {
         assertThrows<IllegalArgumentException> { ReminderStep(Duration.ofMinutes(-1), ReminderStyle.ALARM) }
     }

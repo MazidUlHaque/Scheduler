@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -34,6 +35,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,14 +46,18 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.mazidulhaque.kokhon.R
 import com.mazidulhaque.kokhon.core.designsystem.component.KokhonIcons
 import com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonColors
 import com.mazidulhaque.kokhon.core.model.ReminderChain
+import com.mazidulhaque.kokhon.core.model.ReminderPreset
 import com.mazidulhaque.kokhon.core.model.ReminderStep
 import com.mazidulhaque.kokhon.core.model.ReminderStyle
 import com.mazidulhaque.kokhon.core.model.ScheduledReminder
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import java.time.Duration
 import java.time.Instant
 
@@ -69,6 +75,11 @@ fun ReminderChainEditor(
     val context = LocalContext.current
     val steps = chain.orderedSteps
     var adding by remember { mutableStateOf(false) }
+    var savingPreset by remember { mutableStateOf(false) }
+    val app = kokhonApp()
+    val scope = rememberCoroutineScope()
+    val presetsFlow = remember(app) { app.settingsRepository.settings.map { it.presets } }
+    val presets by presetsFlow.collectAsStateWithLifecycle(initialValue = emptyList())
 
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Text(
@@ -77,6 +88,19 @@ fun ReminderChainEditor(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         ReminderRuler(steps = steps)
+
+        if (presets.isNotEmpty()) {
+            Text(stringResource(R.string.my_presets), style = MaterialTheme.typography.titleSmall)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                presets.forEach { preset ->
+                    FilterChip(
+                        selected = preset.chain.orderedSteps == steps,
+                        onClick = { onChange(preset.chain.copy(enabled = chain.enabled)) },
+                        label = { Text(preset.name) },
+                    )
+                }
+            }
+        }
 
         steps.forEachIndexed { index, step ->
             val label =
@@ -94,6 +118,13 @@ fun ReminderChainEditor(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     Text(label, style = MaterialTheme.typography.titleSmall)
+                    step.purpose?.let {
+                        Text(
+                            stringResource(it.labelRes()),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     TextButton(
                         onClick = { onChange(chain.replace(steps, index, step.copy(style = step.style.next()))) },
                         contentPadding =
@@ -139,6 +170,36 @@ fun ReminderChainEditor(
         ) {
             Text(stringResource(R.string.add_reminder), color = MaterialTheme.colorScheme.onSurface)
         }
+        if (steps.isNotEmpty()) {
+            TextButton(onClick = { savingPreset = true }, modifier = Modifier.heightIn(min = 44.dp)) {
+                Text(
+                    stringResource(R.string.save_as_preset),
+                    textDecoration = androidx.compose.ui.text.style.TextDecoration.Underline,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+
+    if (savingPreset) {
+        var name by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { savingPreset = false },
+            title = { Text(stringResource(R.string.preset_name)) },
+            text = {
+                OutlinedTextField(value = name, onValueChange = {
+                    name = it
+                }, singleLine = true, placeholder = { Text(stringResource(R.string.preset_name_hint)) })
+            },
+            confirmButton = {
+                TextButton(enabled = name.isNotBlank(), onClick = {
+                    val preset = ReminderPreset(name.trim(), chain.copy(enabled = true))
+                    scope.launch { app.settingsRepository.savePreset(preset) }
+                    savingPreset = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = { TextButton(onClick = { savingPreset = false }) { Text(stringResource(R.string.cancel)) } },
+        )
     }
 
     if (adding) {

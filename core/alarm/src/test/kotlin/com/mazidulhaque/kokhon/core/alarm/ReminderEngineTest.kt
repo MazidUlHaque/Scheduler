@@ -101,9 +101,9 @@ class ReminderEngineTest {
         }
 
     @Test
-    fun aDueNotificationReminderShowsDoneSnoozeAndTurnOffActions() =
+    fun closeToTheStartANotificationShowsDoneSnoozeAndTurnOff() =
         runBlocking {
-            val saved = app.reminderCoordinator.save(meeting(Importance.NORMAL))
+            val saved = app.reminderCoordinator.save(meeting(Importance.NORMAL).copy(start = TestApp.NOW.plus(Duration.ofMinutes(16))))
             val reminder = saved.scheduledReminders(TestApp.NOW).single()
             ReminderNotifier(app).deliver(saved, reminder, snoozeCount = 0, settings = ReminderSettings())
 
@@ -166,4 +166,43 @@ class ReminderEngineTest {
             assertNull(shadowOf(app).nextStartedService)
             assertEquals(ReminderNotifier.CHANNEL_DISCREET, shadowOf(notificationManager).allNotifications.single().channelId)
         }
+
+    @Test
+    fun farFromTheStartSnoozeBecomesRemindMeTenMinutesBefore() =
+        runBlocking {
+            // NOW is 14:00 and the meeting is at 15:30: far away, so the smart snooze is offered.
+            val saved = app.reminderCoordinator.save(meeting(Importance.NORMAL).copy(start = start.plus(Duration.ofHours(1))))
+            val reminder = saved.scheduledReminders(TestApp.NOW).single()
+            ReminderNotifier(app).deliver(saved, reminder, snoozeCount = 0, settings = ReminderSettings())
+            val posted = shadowOf(notificationManager).allNotifications.single()
+            assertEquals("Remind me 10 min before", posted.actions[1].title.toString())
+        }
+
+    @Test
+    fun aDinnerDateTellsYouToGetReady() =
+        runBlocking {
+            val date = Entry(title = "Dinner with Nabila", type = EntryType.DINNER_DATE, start = start.plus(Duration.ofHours(3)))
+            val saved = app.reminderCoordinator.save(date)
+            val getReady = saved.scheduledReminders(TestApp.NOW).first()
+            ReminderNotifier(app).deliver(saved, getReady, snoozeCount = 0, settings = ReminderSettings())
+            val posted = shadowOf(notificationManager).allNotifications.single()
+            assertEquals("Get ready: Dinner with Nabila", posted.extras.getString(android.app.Notification.EXTRA_TITLE))
+        }
+
+    @Test
+    fun theMorningSummaryListsTodaysPlans() =
+        runBlocking {
+            val a = app.reminderCoordinator.save(meeting())
+            val b = app.reminderCoordinator.save(Entry(title = "Gym", type = EntryType.EVENT, start = start.plus(Duration.ofHours(2))))
+            DailySummary(app, app.clock).post(DailySummary.KIND_MORNING, listOf(a, b))
+            val posted = shadowOf(notificationManager).allNotifications.single()
+            assertEquals("Today: 2 plans", posted.extras.getString(android.app.Notification.EXTRA_TITLE))
+            assertEquals(ReminderNotifier.CHANNEL_SUMMARY, posted.channelId)
+        }
+
+    @Test
+    fun noSummaryOnAnEmptyDay() {
+        DailySummary(app, app.clock).post(DailySummary.KIND_EVENING, emptyList())
+        assertTrue(shadowOf(notificationManager).allNotifications.isEmpty())
+    }
 }

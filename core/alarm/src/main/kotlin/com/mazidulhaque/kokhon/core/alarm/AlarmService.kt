@@ -113,7 +113,7 @@ class AlarmService : Service() {
                     RingingAlarm(
                         entryId = entryId,
                         stepIndex = stepIndex,
-                        title = entry.title,
+                        title = ReminderNotifier.titleFor(this@AlarmService, entry, stepIndex),
                         entryStart = entry.start,
                         isApproximate = entry.isApproximate,
                         importance = entry.importance,

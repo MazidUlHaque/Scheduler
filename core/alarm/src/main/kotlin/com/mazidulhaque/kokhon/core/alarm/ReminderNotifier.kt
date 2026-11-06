@@ -15,6 +15,7 @@ import com.mazidulhaque.kokhon.core.data.settings.ReminderSettings
 import com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
 import com.mazidulhaque.kokhon.core.model.Entry
 import com.mazidulhaque.kokhon.core.model.Importance
+import com.mazidulhaque.kokhon.core.model.ReminderPurpose
 import com.mazidulhaque.kokhon.core.model.ReminderStyle
 import com.mazidulhaque.kokhon.core.model.ScheduledReminder
 import java.time.Duration
@@ -74,7 +75,7 @@ class ReminderNotifier(
             NotificationCompat
                 .Builder(context, channel)
                 .setSmallIcon(R.drawable.ic_stat_kokhon)
-                .setContentTitle(entry.title)
+                .setContentTitle(titleFor(context, entry, reminder.stepIndex))
                 .setContentText(describeStart(context, entry, clock.instant()))
                 .setCategory(NotificationCompat.CATEGORY_REMINDER)
                 .setPriority(
@@ -103,23 +104,24 @@ class ReminderNotifier(
                     ),
                 )
         if (settings.alarm.canSnooze(snoozeCount)) {
+            // Smart snooze: far from the start, "remind me 10 min before" is more useful than another 5 minutes.
+            val farAway = Duration.between(clock.instant(), entry.start) > Duration.ofMinutes(20)
+            val (label, action) =
+                if (farAway) {
+                    context.getString(R.string.action_remind_before) to NotificationActionReceiver.ACTION_SNOOZE_UNTIL_BEFORE
+                } else {
+                    context.getString(
+                        R.string.action_snooze_minutes,
+                        settings.alarm.snoozeLength
+                            .toMinutes()
+                            .toInt(),
+                    ) to
+                        NotificationActionReceiver.ACTION_SNOOZE
+                }
             builder.addAction(
                 0,
-                context.getString(
-                    R.string.action_snooze_minutes,
-                    settings.alarm.snoozeLength
-                        .toMinutes()
-                        .toInt(),
-                ),
-                NotificationActionReceiver.pendingIntent(
-                    context,
-                    NotificationActionReceiver.ACTION_SNOOZE,
-                    entry.id,
-                    reminder.stepIndex,
-                    id,
-                    snoozeCount,
-                    style,
-                ),
+                label,
+                NotificationActionReceiver.pendingIntent(context, action, entry.id, reminder.stepIndex, id, snoozeCount, style),
             )
         }
         builder.addAction(
@@ -179,8 +181,32 @@ class ReminderNotifier(
         const val CHANNEL_DISCREET = "reminders_discreet"
         const val CHANNEL_ALARMS = "alarms"
         const val CHANNEL_QUIET = "alarms_went_quiet"
+        const val CHANNEL_SUMMARY = "daily_summary"
 
         fun quietNotificationId(entryId: Long): Int = -(entryId.toInt() + 1)
+
+        /** "Get ready: Dinner with Nabila" when the step has a purpose, otherwise just the title. */
+        fun titleFor(
+            context: Context,
+            entry: Entry,
+            stepIndex: Int,
+        ): String {
+            val res =
+                when (
+                    entry.reminders.orderedSteps
+                        .getOrNull(stepIndex)
+                        ?.purpose
+                ) {
+                    ReminderPurpose.GET_READY -> R.string.purpose_get_ready
+                    ReminderPurpose.LEAVE_NOW -> R.string.purpose_leave_now
+                    ReminderPurpose.PACK -> R.string.purpose_pack
+                    ReminderPurpose.CHECK_IN -> R.string.purpose_check_in
+                    ReminderPurpose.PREPARE -> R.string.purpose_prepare
+                    ReminderPurpose.BUY_GIFT -> R.string.purpose_buy_gift
+                    null -> return entry.title
+                }
+            return context.getString(res, entry.title)
+        }
 
         fun canPostNotifications(context: Context): Boolean =
             NotificationManagerCompat.from(context).areNotificationsEnabled() &&
@@ -255,7 +281,15 @@ class ReminderNotifier(
                         description = context.getString(R.string.channel_quiet_desc)
                     },
                 )
-            manager.createNotificationChannels(channels)
+            val summary =
+                NotificationChannel(
+                    CHANNEL_SUMMARY,
+                    context.getString(R.string.channel_summary),
+                    NotificationManager.IMPORTANCE_LOW,
+                ).apply {
+                    description = context.getString(R.string.channel_summary_desc)
+                }
+            manager.createNotificationChannels(channels + summary)
         }
     }
 }

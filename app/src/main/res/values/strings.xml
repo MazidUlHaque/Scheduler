@@ -250,4 +250,24 @@
     <string name="screenshot_preview_cd">The screenshot that was read</string>
     <string name="written_at">The message was sent %1$s, so dates are read from then.</string>
     <string name="or">or</string>
+
+    <!-- Phase 4 -->
+    <string name="purpose_get_ready">Get ready</string>
+    <string name="purpose_leave_now">Time to leave</string>
+    <string name="purpose_pack">Pack your bag</string>
+    <string name="purpose_check_in">Check in online</string>
+    <string name="purpose_prepare">Prepare</string>
+    <string name="purpose_buy_gift">Get a gift</string>
+    <string name="my_presets">My presets</string>
+    <string name="save_as_preset">Save as my preset</string>
+    <string name="preset_name">Name for these reminders</string>
+    <string name="preset_name_hint">e.g. Exam, Gentle, Flight</string>
+    <string name="delete_preset_cd">Delete the preset %1$s</string>
+    <string name="clashes_with">Clashes with %1$s at %2$s</string>
+    <string name="already_have">You already have this plan: %1$s, %2$s</string>
+    <string name="open_it">Open it</string>
+    <string name="daily_summary">Daily summary</string>
+    <string name="morning_summary">Morning summary of today (7:30 AM)</string>
+    <string name="evening_summary">Evening summary of tomorrow (9:00 PM)</string>
+    <string name="presets_settings_empty">Save a set of reminders from any plan\'s reminder screen to reuse it here.</string>
 </resources>

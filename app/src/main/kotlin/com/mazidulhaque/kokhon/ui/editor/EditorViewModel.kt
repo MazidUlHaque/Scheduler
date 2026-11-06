@@ -8,9 +8,12 @@ import com.mazidulhaque.kokhon.core.model.Entry
 import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderChain
+import com.mazidulhaque.kokhon.core.model.clashesIn
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -33,7 +36,7 @@ data class EditorState(
     val location: String = "",
     val notes: String = "",
     val importance: Importance = EntryType.MEETING.defaultImportance,
-    val reminders: ReminderChain = ReminderChain.defaultFor(EntryType.MEETING.defaultImportance),
+    val reminders: ReminderChain = ReminderChain.defaultFor(EntryType.MEETING.defaultImportance, EntryType.MEETING),
     /** Once the user picks an importance, changing the type no longer overrides it. */
     val importanceTouched: Boolean = false,
     val showTitleError: Boolean = false,
@@ -51,6 +54,20 @@ class EditorViewModel(
     private val mutableState = MutableStateFlow(EditorState())
     val state: StateFlow<EditorState> = mutableState.asStateFlow()
     private var original: Entry? = null
+
+    /** Nearby plans, to warn about clashes. */
+    val others: StateFlow<List<Entry>> =
+        repository
+            .observeFrom(clock.instant().minus(Duration.ofDays(1)))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /** Other plans at the same time as the one being edited. */
+    fun clashes(
+        s: EditorState,
+        all: List<Entry>,
+    ): List<Entry> =
+        Entry(id = id, title = s.title, type = s.type, start = startInstant(s), duration = s.durationMinutes?.let(Duration::ofMinutes))
+            .clashesIn(all.filter { it.id != id })
 
     init {
         viewModelScope.launch {
@@ -98,7 +115,7 @@ class EditorViewModel(
                 it.copy(
                     type = type,
                     importance = type.defaultImportance,
-                    reminders = ReminderChain.defaultFor(type.defaultImportance),
+                    reminders = ReminderChain.defaultFor(type.defaultImportance, type),
                 )
             }
         }
@@ -123,7 +140,7 @@ class EditorViewModel(
 
     fun setImportance(level: Importance) =
         mutableState.update {
-            it.copy(importance = level, reminders = ReminderChain.defaultFor(level), importanceTouched = true)
+            it.copy(importance = level, reminders = ReminderChain.defaultFor(level, it.type), importanceTouched = true)
         }
 
     fun setReminders(chain: ReminderChain) = mutableState.update { it.copy(reminders = chain, importanceTouched = true) }

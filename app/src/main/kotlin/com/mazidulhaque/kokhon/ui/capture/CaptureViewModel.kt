@@ -12,6 +12,8 @@ import com.mazidulhaque.kokhon.core.model.EntryStatus
 import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderChain
+import com.mazidulhaque.kokhon.core.model.clashesIn
+import com.mazidulhaque.kokhon.core.model.duplicateIn
 import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ChangeRequest
 import com.mazidulhaque.kokhon.core.parser.MatchCandidate
@@ -20,8 +22,10 @@ import com.mazidulhaque.kokhon.core.parser.PlanParser
 import com.mazidulhaque.kokhon.core.parser.Span
 import com.mazidulhaque.kokhon.core.parser.UpdateMatcher
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
@@ -90,6 +94,22 @@ class CaptureViewModel(
 ) : ViewModel() {
     private val mutableState = MutableStateFlow(CaptureState(text = initialText))
     val state: StateFlow<CaptureState> = mutableState.asStateFlow()
+
+    /** Nearby plans, to warn about clashes and duplicates. */
+    val others: StateFlow<List<Entry>> =
+        repository
+            .observeFrom(clock.instant().minus(Duration.ofDays(1)))
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    fun clashes(
+        draft: DraftUi,
+        all: List<Entry>,
+    ): List<Entry> = draft.toEntry().clashesIn(all)
+
+    fun duplicate(
+        draft: DraftUi,
+        all: List<Entry>,
+    ): Entry? = draft.toEntry().duplicateIn(all)
 
     init {
         viewModelScope.launch {
@@ -185,7 +205,16 @@ class CaptureViewModel(
                 spans = drafts.flatMap { d -> d.spans },
                 drafts =
                     drafts.map { d ->
-                        DraftUi(d, d.title, d.type, d.date, d.time, d.approximate, d.importance, ReminderChain.defaultFor(d.importance))
+                        DraftUi(
+                            d,
+                            d.title,
+                            d.type,
+                            d.date,
+                            d.time,
+                            d.approximate,
+                            d.importance,
+                            ReminderChain.defaultFor(d.importance, d.type),
+                        )
                     },
                 current = 0,
                 mode = if (drafts.isEmpty()) CaptureMode.NOTHING_FOUND else CaptureMode.CREATE,
@@ -214,7 +243,7 @@ class CaptureViewModel(
     fun setType(type: EntryType) =
         updateDraft {
             val importance = maxOf(type.defaultImportance, it.parsed.importance, compareBy { level -> level.ordinal })
-            it.copy(type = type, importance = importance, reminders = ReminderChain.defaultFor(importance))
+            it.copy(type = type, importance = importance, reminders = ReminderChain.defaultFor(importance, type))
         }
 
     fun setDate(date: LocalDate) = updateDraft { it.copy(date = date) }
@@ -229,7 +258,7 @@ class CaptureViewModel(
 
     fun setApproximate(value: Boolean) = updateDraft { it.copy(approximate = value) }
 
-    fun setImportance(level: Importance) = updateDraft { it.copy(importance = level, reminders = ReminderChain.defaultFor(level)) }
+    fun setImportance(level: Importance) = updateDraft { it.copy(importance = level, reminders = ReminderChain.defaultFor(level, it.type)) }
 
     fun setReminders(chain: ReminderChain) = updateDraft { it.copy(reminders = chain) }
 

@@ -67,7 +67,7 @@ fun durationText(value: Duration): String =
 fun SettingsScreen(onBack: () -> Unit) {
     val app = kokhonApp()
     val context = LocalContext.current
-    val vm: SettingsViewModel = viewModel { SettingsViewModel(app.settingsRepository, app.clock) }
+    val vm: SettingsViewModel = viewModel { SettingsViewModel(app.settingsRepository, app.clock, app.dailySummary) }
     val settings by vm.settings.collectAsStateWithLifecycle()
     var refresh by remember { mutableIntStateOf(0) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
@@ -208,6 +208,48 @@ fun SettingsScreen(onBack: () -> Unit) {
                     prefs.criticalBypassesSilent,
                     vm::setCriticalBypass,
                 )
+            }
+
+            Section(stringResource(R.string.daily_summary)) {
+                SwitchRow(
+                    stringResource(R.string.morning_summary),
+                    null,
+                    prefs.morningSummary,
+                ) { vm.setSummaries(it, prefs.eveningSummary) }
+                SwitchRow(
+                    stringResource(R.string.evening_summary),
+                    null,
+                    prefs.eveningSummary,
+                ) { vm.setSummaries(prefs.morningSummary, it) }
+            }
+
+            Section(stringResource(R.string.my_presets)) {
+                if (prefs.presets.isEmpty()) {
+                    Text(
+                        stringResource(R.string.presets_settings_empty),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                prefs.presets.forEach { preset ->
+                    Row(modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(preset.name, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                com.mazidulhaque.kokhon.ui.common
+                                    .reminderSentence(preset.chain),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        androidx.compose.material3.IconButton(onClick = { vm.deletePreset(preset.name) }) {
+                            androidx.compose.material3.Icon(
+                                com.mazidulhaque.kokhon.core.designsystem.component.KokhonIcons.Trash,
+                                contentDescription = stringResource(R.string.delete_preset_cd, preset.name),
+                            )
+                        }
+                    }
+                }
             }
 
             Section(stringResource(R.string.about_app)) {

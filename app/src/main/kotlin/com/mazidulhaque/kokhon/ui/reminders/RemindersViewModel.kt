@@ -40,7 +40,7 @@ class RemindersViewModel(
 
     fun setImportance(level: Importance) =
         mutableState.update {
-            it?.copy(importance = level, chain = ReminderChain.defaultFor(level))
+            it?.copy(importance = level, chain = ReminderChain.defaultFor(level, it.entry.type))
         }
 
     fun setChain(chain: ReminderChain) = mutableState.update { it?.copy(chain = chain) }

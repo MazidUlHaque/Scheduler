@@ -52,4 +52,24 @@
     <string name="history_cancelled">Cancelled</string>
     <string name="history_reopened">Made active again</string>
     <string name="history_details">Details edited</string>
+
+    <string name="purpose_get_ready">Get ready: %1$s</string>
+    <string name="purpose_leave_now">Time to leave: %1$s</string>
+    <string name="purpose_pack">Pack your bag: %1$s</string>
+    <string name="purpose_check_in">Check in online: %1$s</string>
+    <string name="purpose_prepare">Prepare for: %1$s</string>
+    <string name="purpose_buy_gift">Get a gift: %1$s</string>
+    <string name="action_remind_before">Remind me 10 min before</string>
+
+    <string name="channel_summary">Daily summary</string>
+    <string name="channel_summary_desc">A short list of your plans in the morning or the evening</string>
+    <plurals name="summary_today">
+        <item quantity="one">Today: %1$d plan</item>
+        <item quantity="other">Today: %1$d plans</item>
+    </plurals>
+    <plurals name="summary_tomorrow">
+        <item quantity="one">Tomorrow: %1$d plan</item>
+        <item quantity="other">Tomorrow: %1$d plans</item>
+    </plurals>
+    <string name="summary_first">First: %1$s at %2$s</string>
 </resources>

@@ -31,6 +31,14 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     host.reminderCoordinator.setRemindersEnabled(entryId, false)
                 }
 
+                ACTION_SNOOZE_UNTIL_BEFORE -> {
+                    val entry = host.entryRepository.get(entryId) ?: return@runAsync
+                    val at = entry.start.minus(java.time.Duration.ofMinutes(10))
+                    if (at.isAfter(host.clock.instant())) {
+                        host.alarmScheduler.scheduleSnooze(entryId, stepIndex, style ?: ReminderStyle.NOTIFICATION, at, snoozeCount + 1)
+                    }
+                }
+
                 ACTION_SNOOZE -> {
                     val settings = host.settingsRepository.current()
                     host.alarmScheduler.scheduleSnooze(
@@ -49,6 +57,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
         const val ACTION_DONE = "com.mazidulhaque.kokhon.action.DONE"
         const val ACTION_SNOOZE = "com.mazidulhaque.kokhon.action.SNOOZE"
         const val ACTION_TURN_OFF = "com.mazidulhaque.kokhon.action.TURN_OFF"
+        const val ACTION_SNOOZE_UNTIL_BEFORE = "com.mazidulhaque.kokhon.action.SNOOZE_UNTIL_BEFORE"
         private const val EXTRA_ENTRY_ID = "entry_id"
         private const val EXTRA_STEP_INDEX = "step_index"
         private const val EXTRA_NOTIFICATION_ID = "notification_id"
@@ -73,7 +82,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
                     .putExtra(EXTRA_SNOOZE_COUNT, snoozeCount)
                     .putExtra(EXTRA_STYLE, style.name)
             // Distinct request codes per action, so the three actions never overwrite each other.
-            val code = notificationId * 4 + listOf(ACTION_DONE, ACTION_SNOOZE, ACTION_TURN_OFF).indexOf(action)
+            val code = notificationId * 5 + listOf(ACTION_DONE, ACTION_SNOOZE, ACTION_TURN_OFF, ACTION_SNOOZE_UNTIL_BEFORE).indexOf(action)
             return PendingIntent.getBroadcast(
                 context,
                 code,

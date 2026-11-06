@@ -59,6 +59,7 @@ import com.mazidulhaque.kokhon.core.designsystem.component.KokhonPrimaryButton
 import com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonColors
 import com.mazidulhaque.kokhon.core.model.EntryType
+import com.mazidulhaque.kokhon.ui.common.ClashWarning
 import com.mazidulhaque.kokhon.ui.common.ImportanceSelector
 import com.mazidulhaque.kokhon.ui.common.KokhonTopBar
 import com.mazidulhaque.kokhon.ui.common.ReminderChainEditor
@@ -85,6 +86,7 @@ fun EditorScreen(
             EditorViewModel(id, if (fromCapture) app.captureDraft.value else null, app.entryRepository, app.reminderCoordinator, app.clock)
         }
     val state by vm.state.collectAsStateWithLifecycle()
+    val others by vm.others.collectAsStateWithLifecycle()
     var pickingDate by remember { mutableStateOf(false) }
     var pickingTime by remember { mutableStateOf(false) }
     var editingReminders by remember { mutableStateOf(false) }
@@ -203,6 +205,7 @@ fun EditorScreen(
                     }
                     NudgeButton(stringResource(R.string.plus_15), stringResource(R.string.later_15)) { vm.nudge(15) }
                 }
+                ClashWarning(vm.clashes(state, others))
                 if (vm.isInPast()) {
                     Text(
                         stringResource(R.string.in_the_past_warning),
@@ -260,7 +263,7 @@ fun EditorScreen(
 
             ImportanceSelector(
                 selected = state.importance,
-                isCustom = state.reminders.isCustomFor(state.importance),
+                isCustom = state.reminders.isCustomFor(state.importance, state.type),
                 onSelect = vm::setImportance,
             )
             Row(verticalAlignment = Alignment.CenterVertically) {

@@ -14,7 +14,12 @@ class RescheduleReceiver : BroadcastReceiver() {
         intent: Intent,
     ) {
         if (intent.action !in HANDLED) return
-        runAsync { context.reminderHost.reminderCoordinator.rescheduleAll() }
+        runAsync {
+            val host = context.reminderHost
+            host.reminderCoordinator.rescheduleAll()
+            val settings = host.settingsRepository.current()
+            DailySummary(context, host.clock).scheduleNext(settings.morningSummary, settings.eveningSummary)
+        }
     }
 
     private companion object {

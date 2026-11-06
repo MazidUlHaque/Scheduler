@@ -79,6 +79,8 @@ import com.mazidulhaque.kokhon.core.model.ReminderStyle
 import com.mazidulhaque.kokhon.core.parser.MatchReason
 import com.mazidulhaque.kokhon.core.parser.Span
 import com.mazidulhaque.kokhon.core.parser.SpanKind
+import com.mazidulhaque.kokhon.ui.common.ClashWarning
+import com.mazidulhaque.kokhon.ui.common.DuplicateWarning
 import com.mazidulhaque.kokhon.ui.common.ImportanceSelector
 import com.mazidulhaque.kokhon.ui.common.ReminderChainEditor
 import com.mazidulhaque.kokhon.ui.common.isCustomFor
@@ -152,7 +154,7 @@ fun CaptureScreen(
         when (state.mode) {
             CaptureMode.INPUT -> InputContent(state, vm)
             CaptureMode.READING -> ReadingContent(state)
-            CaptureMode.CREATE -> CreateContent(state, vm, onEditDraft)
+            CaptureMode.CREATE -> CreateContent(state, vm, onEditDraft, onOpenEntry)
             CaptureMode.UPDATE -> UpdateContent(state, vm, onClose)
             CaptureMode.NOTHING_TO_CHANGE -> NothingToChange(state, vm, onEditEntry)
             CaptureMode.NOTHING_FOUND -> NothingFound(vm, onEditDraft)
@@ -310,9 +312,12 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
     state: CaptureState,
     vm: CaptureViewModel,
     onEditDraft: () -> Unit,
+    onOpenEntry: (Long) -> Unit,
 ) {
     val context = LocalContext.current
     val draft = state.drafts[state.current]
+    val others by vm.others.collectAsStateWithLifecycle()
+    val duplicate = vm.duplicate(draft, others)
     var pickingDate by remember { mutableStateOf(false) }
     var pickingTime by remember { mutableStateOf(false) }
     var pickingType by remember { mutableStateOf(false) }
@@ -346,18 +351,22 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
         if (state.drafts.size > 1) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 state.drafts.forEachIndexed { index, d ->
+                    val includeDescription = stringResource(R.string.include_plan_cd, d.title)
                     val label = d.title + " · " + TimeFormat.shortDate(vm.startOf(d)) + ", " + TimeFormat.time(context, vm.startOf(d))
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                         Checkbox(
                             checked = d.include,
                             onCheckedChange = { vm.setIncluded(index, it) },
-                            modifier = Modifier.semantics { contentDescription = "Include ${d.title}" },
+                            modifier = Modifier.semantics { contentDescription = includeDescription },
                         )
                         FilterChip(selected = index == state.current, onClick = { vm.select(index) }, label = { Text(label, maxLines = 1) })
                     }
                 }
             }
         }
+
+        duplicate?.let { DuplicateWarning(it) { onOpenEntry(it.id) } }
+        ClashWarning(vm.clashes(draft, others).filter { it.id != duplicate?.id })
 
         draft.amPmChoices?.let { choices ->
             Column(
@@ -560,7 +569,7 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
             ) {
                 ImportanceSelector(
                     selected = draft.importance,
-                    isCustom = draft.reminders.isCustomFor(draft.importance),
+                    isCustom = draft.reminders.isCustomFor(draft.importance, draft.type),
                     onSelect = vm::setImportance,
                 )
                 ReminderChainEditor(chain = draft.reminders, entryStart = start, onChange = vm::setReminders)

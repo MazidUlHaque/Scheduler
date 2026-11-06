@@ -90,4 +90,18 @@ fun reminderSentence(chain: ReminderChain): String {
 }
 
 /** True when [chain] differs from the default chain of [importance]. */
-fun ReminderChain.isCustomFor(importance: Importance): Boolean = orderedSteps != ReminderChain.defaultFor(importance).orderedSteps
+fun ReminderChain.isCustomFor(
+    importance: Importance,
+    type: com.mazidulhaque.kokhon.core.model.EntryType,
+): Boolean = orderedSteps != ReminderChain.defaultFor(importance, type).orderedSteps
+
+@StringRes
+fun com.mazidulhaque.kokhon.core.model.ReminderPurpose.labelRes(): Int =
+    when (this) {
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.GET_READY -> R.string.purpose_get_ready
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.LEAVE_NOW -> R.string.purpose_leave_now
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.PACK -> R.string.purpose_pack
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.CHECK_IN -> R.string.purpose_check_in
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.PREPARE -> R.string.purpose_prepare
+        com.mazidulhaque.kokhon.core.model.ReminderPurpose.BUY_GIFT -> R.string.purpose_buy_gift
+    }

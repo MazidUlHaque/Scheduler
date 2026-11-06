@@ -6,6 +6,7 @@ import com.mazidulhaque.kokhon.core.model.EntryStatus
 import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderChain
+import com.mazidulhaque.kokhon.core.model.ReminderPurpose
 import com.mazidulhaque.kokhon.core.model.ReminderStep
 import com.mazidulhaque.kokhon.core.model.ReminderStyle
 import kotlinx.serialization.Serializable
@@ -20,6 +21,7 @@ internal data class StepJson(
     val offsetSeconds: Long,
     val style: String,
     val enabled: Boolean = true,
+    val purpose: String? = null,
 )
 
 @Serializable
@@ -31,19 +33,24 @@ internal data class ChainJson(
 private val json = Json { ignoreUnknownKeys = true }
 private val peopleSerializer = ListSerializer(String.serializer())
 
-internal fun ReminderChain.toJson(): String =
+fun ReminderChain.toJson(): String =
     json.encodeToString(
         ChainJson.serializer(),
-        ChainJson(steps.map { StepJson(it.offset.seconds, it.style.name, it.enabled) }, enabled),
+        ChainJson(steps.map { StepJson(it.offset.seconds, it.style.name, it.enabled, it.purpose?.name) }, enabled),
     )
 
-internal fun reminderChainFromJson(value: String): ReminderChain {
+fun reminderChainFromJson(value: String): ReminderChain {
     val chain = json.decodeFromString(ChainJson.serializer(), value)
     return ReminderChain(
         steps =
             chain.steps.mapNotNull { step ->
                 val style = enumValueOrNull<ReminderStyle>(step.style) ?: return@mapNotNull null
-                ReminderStep(Duration.ofSeconds(step.offsetSeconds.coerceAtLeast(0)), style, step.enabled)
+                ReminderStep(
+                    Duration.ofSeconds(step.offsetSeconds.coerceAtLeast(0)),
+                    style,
+                    step.enabled,
+                    enumValueOrNull<ReminderPurpose>(step.purpose),
+                )
             },
         enabled = chain.enabled,
     )

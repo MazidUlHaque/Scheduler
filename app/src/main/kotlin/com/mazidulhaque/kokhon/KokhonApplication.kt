@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import com.mazidulhaque.kokhon.core.alarm.AlarmScheduler
+import com.mazidulhaque.kokhon.core.alarm.DailySummary
 import com.mazidulhaque.kokhon.core.alarm.ReminderCoordinator
 import com.mazidulhaque.kokhon.core.alarm.ReminderHost
 import com.mazidulhaque.kokhon.core.alarm.ReminderNotifier
@@ -13,7 +14,11 @@ import com.mazidulhaque.kokhon.core.model.Entry
 import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ParserConfig
 import com.mazidulhaque.kokhon.core.parser.PlanParser
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.DayOfWeek
 
@@ -45,9 +50,18 @@ class KokhonApplication :
     /** The most recently deleted entry, offered for Undo on the home screen. */
     val pendingUndo = MutableStateFlow<Entry?>(null)
 
+    val dailySummary by lazy { DailySummary(this, clock) }
+
+    /** For work that outlives any screen, such as scheduling the daily summary at start-up. */
+    val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
     override fun onCreate() {
         super.onCreate()
         ReminderNotifier.ensureChannels(this)
+        appScope.launch {
+            val settings = settingsRepository.current()
+            dailySummary.scheduleNext(settings.morningSummary, settings.eveningSummary)
+        }
     }
 
     override fun openEntryIntent(

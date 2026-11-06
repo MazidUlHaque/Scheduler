@@ -45,7 +45,7 @@ data class Entry(
     val notes: String? = null,
     val people: List<String> = emptyList(),
     val importance: Importance = type.defaultImportance,
-    val reminders: ReminderChain = ReminderChain.defaultFor(importance),
+    val reminders: ReminderChain = ReminderChain.defaultFor(importance, type),
     val manualStatus: EntryStatus? = null,
     val source: EntrySource = EntrySource.MANUAL,
 ) {
@@ -77,5 +77,5 @@ data class Entry(
     fun rescheduledTo(newStart: Instant): Entry = copy(start = newStart, manualStatus = null)
 
     /** Changes importance and replaces the reminders with that level's default chain. */
-    fun withImportance(level: Importance): Entry = copy(importance = level, reminders = ReminderChain.defaultFor(level))
+    fun withImportance(level: Importance): Entry = copy(importance = level, reminders = ReminderChain.defaultFor(level, type))
 }

@@ -2,6 +2,7 @@ package com.mazidulhaque.kokhon.ui.settings
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.mazidulhaque.kokhon.core.alarm.DailySummary
 import com.mazidulhaque.kokhon.core.data.settings.ReminderSettings
 import com.mazidulhaque.kokhon.core.data.settings.SettingsRepository
 import com.mazidulhaque.kokhon.core.model.AlarmBehavior
@@ -18,6 +19,7 @@ import java.time.LocalTime
 class SettingsViewModel(
     private val repository: SettingsRepository,
     val clock: Clock,
+    private val summary: DailySummary,
 ) : ViewModel() {
     val settings: StateFlow<ReminderSettings?> =
         repository.settings.stateIn(
@@ -33,6 +35,20 @@ class SettingsViewModel(
 
     fun setCriticalBypass(enabled: Boolean) {
         viewModelScope.launch { repository.setCriticalBypassesSilent(enabled) }
+    }
+
+    fun setSummaries(
+        morning: Boolean,
+        evening: Boolean,
+    ) {
+        viewModelScope.launch {
+            repository.setSummaries(morning, evening)
+            summary.scheduleNext(morning, evening)
+        }
+    }
+
+    fun deletePreset(name: String) {
+        viewModelScope.launch { repository.deletePreset(name) }
     }
 
     enum class DiscreetChoice { OFF, ONE_HOUR, TWO_HOURS, UNTIL_MORNING }

@@ -7,11 +7,18 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.mazidulhaque.kokhon.core.data.db.reminderChainFromJson
+import com.mazidulhaque.kokhon.core.data.db.toJson
 import com.mazidulhaque.kokhon.core.model.AlarmBehavior
+import com.mazidulhaque.kokhon.core.model.ReminderPreset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.Instant
 
@@ -22,6 +29,13 @@ data class ReminderSettings(
     val discreetUntil: Instant? = null,
     /** When true, Critical entries may ring even when the phone is on silent or Do Not Disturb. */
     val criticalBypassesSilent: Boolean = false,
+    /** A short summary of today's plans each morning. */
+    val morningSummary: Boolean = true,
+    /** A short summary of tomorrow's plans each evening. */
+    val eveningSummary: Boolean = false,
+    /** Offer to make a plan when a new screenshot contains one. Off unless the user turns it on. */
+    val watchScreenshots: Boolean = false,
+    val presets: List<ReminderPreset> = emptyList(),
 ) {
     fun isDiscreetAt(now: Instant): Boolean = discreetUntil?.isAfter(now) == true
 }
@@ -41,6 +55,10 @@ class SettingsRepository(
         val gentleStart = booleanPreferencesKey("gentle_start")
         val discreetUntil = longPreferencesKey("discreet_until_millis")
         val criticalBypass = booleanPreferencesKey("critical_bypasses_silent")
+        val morningSummary = booleanPreferencesKey("morning_summary")
+        val eveningSummary = booleanPreferencesKey("evening_summary")
+        val watchScreenshots = booleanPreferencesKey("watch_screenshots")
+        val presets = stringPreferencesKey("reminder_presets")
     }
 
     val settings: Flow<ReminderSettings> =
@@ -66,6 +84,10 @@ class SettingsRepository(
                     ),
                 discreetUntil = p[Keys.discreetUntil]?.takeIf { it > 0 }?.let(Instant::ofEpochMilli),
                 criticalBypassesSilent = p[Keys.criticalBypass] ?: false,
+                morningSummary = p[Keys.morningSummary] ?: true,
+                eveningSummary = p[Keys.eveningSummary] ?: false,
+                watchScreenshots = p[Keys.watchScreenshots] ?: false,
+                presets = p[Keys.presets]?.let(::decodePresets).orEmpty(),
             )
         }
 
@@ -89,4 +111,52 @@ class SettingsRepository(
     suspend fun setCriticalBypassesSilent(enabled: Boolean) {
         store.edit { it[Keys.criticalBypass] = enabled }
     }
+
+    suspend fun setSummaries(
+        morning: Boolean,
+        evening: Boolean,
+    ) {
+        store.edit {
+            it[Keys.morningSummary] = morning
+            it[Keys.eveningSummary] = evening
+        }
+    }
+
+    suspend fun setWatchScreenshots(enabled: Boolean) {
+        store.edit { it[Keys.watchScreenshots] = enabled }
+    }
+
+    /** Saves a preset; a preset with the same name is replaced. */
+    suspend fun savePreset(preset: ReminderPreset) {
+        store.edit { p ->
+            val current = p[Keys.presets]?.let(::decodePresets).orEmpty().filterNot { it.name.equals(preset.name, ignoreCase = true) }
+            p[Keys.presets] = encodePresets(current + preset)
+        }
+    }
+
+    suspend fun deletePreset(name: String) {
+        store.edit { p ->
+            p[Keys.presets] = encodePresets(p[Keys.presets]?.let(::decodePresets).orEmpty().filterNot { it.name == name })
+        }
+    }
+
+    private fun encodePresets(presets: List<ReminderPreset>): String =
+        presetJson.encodeToString(ListSerializer(PresetJson.serializer()), presets.map { PresetJson(it.name, it.chain.toJson()) })
+
+    private fun decodePresets(value: String): List<ReminderPreset> =
+        runCatching {
+            presetJson
+                .decodeFromString(
+                    ListSerializer(PresetJson.serializer()),
+                    value,
+                ).map { ReminderPreset(it.name, reminderChainFromJson(it.chain)) }
+        }.getOrDefault(emptyList())
 }
+
+@Serializable
+private data class PresetJson(
+    val name: String,
+    val chain: String,
+)
+
+private val presetJson = Json { ignoreUnknownKeys = true }

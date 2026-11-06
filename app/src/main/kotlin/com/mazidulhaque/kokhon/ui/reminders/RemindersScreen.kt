@@ -56,7 +56,11 @@ fun RemindersScreen(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
         ) {
-            ImportanceSelector(selected = s.importance, isCustom = s.chain.isCustomFor(s.importance), onSelect = vm::setImportance)
+            ImportanceSelector(
+                selected = s.importance,
+                isCustom = s.chain.isCustomFor(s.importance, s.entry.type),
+                onSelect = vm::setImportance,
+            )
             Text(reminderSentence(s.chain), style = MaterialTheme.typography.bodyLarge)
             if (s.chain.enabled) {
                 ReminderChainEditor(chain = s.chain, entryStart = s.entry.start, onChange = vm::setChain)
