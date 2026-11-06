@@ -1,0 +1,29 @@
+name: 🧠 Parsing issue
+description: A message or screenshot was understood incorrectly
+labels: ["type:bug", "area:parser"]
+body:
+  - type: textarea
+    id: input
+    attributes:
+      label: Input text
+      description: The exact text you pasted or shared (remove private info)
+    validations:
+      required: true
+  - type: input
+    id: when
+    attributes:
+      label: When did you capture it?
+      placeholder: e.g. Fri 6 Nov 2026, 3:10 PM
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected result
+      placeholder: Meeting · Sat 7 Nov · 21:30
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual result
+    validations:
+      required: true

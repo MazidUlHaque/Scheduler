@@ -1,0 +1,35 @@
+name: 🐞 Bug report
+description: Something isn't working as expected
+labels: ["type:bug", "triage"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened?
+      description: What went wrong, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Share the text "..." to Scheduler
+        2. ...
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device & Android version
+      placeholder: e.g. Pixel 8, Android 16
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: App version
+  - type: textarea
+    id: extra
+    attributes:
+      label: Screenshots / logs
