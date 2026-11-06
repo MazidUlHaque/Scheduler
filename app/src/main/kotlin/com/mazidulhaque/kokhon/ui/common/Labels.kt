@@ -83,7 +83,7 @@ fun reminderSentence(chain: ReminderChain): String {
         if (labels.size == 1) {
             labels.single()
         } else {
-            labels.dropLast(1).joinToString(", ") + " and " + labels.last()
+            stringResource(R.string.list_and, labels.dropLast(1).joinToString(", "), labels.last())
         }
     val before = if (steps.all { it.offset.isZero }) joined else stringResource(R.string.offset_before, joined)
     return stringResource(R.string.reminder_sentence, before)

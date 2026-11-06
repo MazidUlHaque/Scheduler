@@ -11,7 +11,7 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 ![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)
 ![CI](https://github.com/MazidUlHaque/Scheduler/actions/workflows/ci.yml/badge.svg)
-![Status](https://img.shields.io/badge/status-in%20development-orange)
+![Version](https://img.shields.io/badge/version-1.0.0-1E8E4E)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)
 
 </div>
@@ -29,6 +29,8 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 | ⏰ | **Calm, clear alarms** | A big Stop button, a separate Snooze, a ring limit, "I'm aware - no more reminders", and a discreet vibrate-only mode |
 | ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and Kokhon updates the existing plan. |
 | 📅 | **Calendar, search & widget** | Month view, search across everything, a "Next up" home-screen widget and a Discreet Quick Settings tile |
+| 🇧🇩 | **English and Bangla** | The whole app in both languages; understands Bangla, Banglish and English messages |
+| 💾 | **Backups & calendar files** | Back up to a file, import and export `.ics` for Google Calendar, Outlook and Apple Calendar |
 | 🔒 | **Private by design** | Text recognition and parsing run on your phone. No account and no cloud needed. |
 
 ## Screenshots
@@ -65,6 +67,12 @@ core/designsystem/    Colours, typography, theme, icons and shared components
 docs/                 Requirements, plan and design decisions
 ```
 
+## Releases
+
+Signed builds are published on the [Releases](https://github.com/MazidUlHaque/Scheduler/releases) page: install the `.apk`
+on any Android 8.0+ phone. How releases are made: [docs/releasing.md](docs/releasing.md).
+Privacy: [docs/privacy-policy.md](docs/privacy-policy.md).
+
 ## Documentation
 
 - [Requirement Analysis](docs/requirements-analysis.md): market scan, gaps, unique features, requirements, HCI principles
@@ -79,7 +87,8 @@ docs/                 Requirements, plan and design decisions
 - [x] Phase 2: Text capture (paste / share) with smart parsing
 - [x] Phase 3: Screenshot capture (on-device OCR)
 - [x] Phase 4: Smart reminders, widgets, UX polish
-- [ ] Phase 5: Release on Google Play
+- [x] Phase 5: Release builds, backups, calendar files, Bangla
+- [ ] Publish on Google Play (needs the owner's developer account and signing key, see [docs/releasing.md](docs/releasing.md))
 
 ## Contributing
 

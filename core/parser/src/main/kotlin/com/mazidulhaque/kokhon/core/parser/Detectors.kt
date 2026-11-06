@@ -102,12 +102,12 @@ internal data class TaskMention(
     val titleStart: Int,
 ) : Mention
 
-private const val B = "(?<![\\p{L}\\d])"
-private const val E = "(?![\\p{L}\\d])"
+private const val B = "(?<![\\p{L}\\p{M}\\d])"
+private const val E = "(?![\\p{L}\\p{M}\\d])"
 private const val MERIDIEM = "(am|pm|a\\.m\\.?|p\\.m\\.?)"
 
 /** Banglish suffixes people add to times: "9tay", "9.30e", "9 baje". */
-private const val BN_SUFFIX = "(?:\\s*(?:baje|ta|tay|tai|te|e|er\\s+dike|dike))?"
+private const val BN_SUFFIX = "(?:\\s*(?:baje|ta|tay|tai|te|e|er\\s+dike|dike|টা(?:য়|য়|র\\s+দিকে|র\\s+সময়|র\\s+সময়)?|বাজে|এ|তে))?"
 
 private val NUMBER_WORDS =
     mapOf(
@@ -185,7 +185,16 @@ private val WEEKDAYS =
         "sat" to DayOfWeek.SATURDAY,
         "sunday" to DayOfWeek.SUNDAY,
         "sun" to DayOfWeek.SUNDAY,
-        // Bangla
+        // Bangla script
+        "সোমবার" to DayOfWeek.MONDAY,
+        "মঙ্গলবার" to DayOfWeek.TUESDAY,
+        "বুধবার" to DayOfWeek.WEDNESDAY,
+        "বৃহস্পতিবার" to DayOfWeek.THURSDAY,
+        "শুক্রবার" to DayOfWeek.FRIDAY,
+        "শনিবার" to DayOfWeek.SATURDAY,
+        "রবিবার" to DayOfWeek.SUNDAY,
+        "রোববার" to DayOfWeek.SUNDAY,
+        // Banglish
         "shombar" to DayOfWeek.MONDAY,
         "sombar" to DayOfWeek.MONDAY,
         "mongolbar" to DayOfWeek.TUESDAY,
@@ -219,7 +228,10 @@ internal class Detectors(
     private val config: ParserConfig,
 ) {
     /** Lower-cased, same length as [text]. */
-    val lc: String = buildString(text.length) { text.forEach { append(it.lowercaseChar()) } }
+    val lc: String =
+        buildString(text.length) {
+            text.forEach { c -> append(if (c in '০'..'৯') '0' + (c - '০') else c.lowercaseChar()) }
+        }
     private val today: LocalDate = now.toLocalDate()
 
     private fun find(pattern: String) = Regex(pattern).findAll(lc)
@@ -261,15 +273,6 @@ internal class Detectors(
             if (h in 1..12) found.addIfFree(TimeMention(m.range.first, m.range.last + 1, h, 0, meridiemOf(m.groupValues[2])), emptyList())
         }
 
-        // "9 o'clock", "9 baje", "9tay", "9ish"
-        find("$B(\\d{1,2})\\s*(o'?clock|o’clock|baje|tay|tai|ish)$E").forEach { m ->
-            val h = m.groupValues[1].toInt()
-            if (h in 0..23) {
-                val approx = m.groupValues[2] == "ish"
-                found.addIfFree(TimeMention(m.range.first, m.range.last + 1, h, 0, null, approximate = approx), emptyList())
-            }
-        }
-
         // "half past 9", "quarter to 10", Bangla "sare 9" (half past)
         find("$B(half|quarter)\\s+(past|to)\\s+(\\d{1,2}|${NUMBER_WORDS.keys.joinToString("|")})$E").forEach { m ->
             val h = number(m.groupValues[3]) ?: return@forEach
@@ -282,9 +285,18 @@ internal class Detectors(
                 }
             found.addIfFree(TimeMention(m.range.first, m.range.last + 1, hour, minute, null), emptyList())
         }
-        find("$B(sare|shade|sharhe|share)\\s+(\\d{1,2})$BN_SUFFIX$E").forEach { m ->
+        find("$B(sare|shade|sharhe|share|সাড়ে|সাড়ে)\\s*(\\d{1,2})$BN_SUFFIX$E").forEach { m ->
             val h = m.groupValues[2].toInt()
             if (h in 1..12) found.addIfFree(TimeMention(m.range.first, m.range.last + 1, h, 30, null), emptyList())
+        }
+
+        // "9 o'clock", "9 baje", "9tay", "9ish"
+        find("$B(\\d{1,2})\\s*(o'?clock|o’clock|baje|tay|tai|ish|টা(?:য়|য়|র\\s+দিকে|র\\s+সময়|র\\s+সময়)?|বাজে)$E").forEach { m ->
+            val h = m.groupValues[1].toInt()
+            if (h in 0..23) {
+                val approx = m.groupValues[2] == "ish" || m.groupValues[2].endsWith("দিকে")
+                found.addIfFree(TimeMention(m.range.first, m.range.last + 1, h, 0, null, approximate = approx), emptyList())
+            }
         }
 
         // "noon", "midday", "midnight"
@@ -321,7 +333,7 @@ internal class Detectors(
         }
 
         // "move it to 9": "to" is a time cue only when the message is about changing a plan.
-        if (Regex("$B(move|shift|postpone|reschedule|push|delay|prepone|change|pichiye|egiye)").containsMatchIn(lc)) {
+        if (Regex("$B(move|shift|postpone|reschedule|push|delay|prepone|change|pichiye|egiye|পিছিয়ে|পিছিয়ে|এগিয়ে|এগিয়ে|পরিবর্তে|বদলে)").containsMatchIn(lc)) {
             find("${B}to\\s+(\\d{1,2})$BN_SUFFIX$E").forEach { m ->
                 val h = m.groupValues[1].toInt()
                 if (h in 0..23 && !followedByUnit(m.range.last + 1)) {
@@ -365,16 +377,16 @@ internal class Detectors(
             found.addIfFree(DateMention(start, realEnd, date, guessed, possessive, period), times)
         }
 
-        find("$B(?:the\\s+)?day\\s+after\\s+(?:tomorrow|tmrw|tmr)$E|$B(porshu|porshudin|porsu|poroshu)$E").forEach {
+        find("$B(?:the\\s+)?day\\s+after\\s+(?:tomorrow|tmrw|tmr)$E|$B(porshu|porshudin|porsu|poroshu|পরশু|পরশুদিন)$E").forEach {
             add(it.range.first, it.range.last + 1, today.plusDays(2))
         }
-        find("$B(tonight|tonite|2nite|aj\\s*raa?te?|aaj\\s*raa?te?|ajke\\s*raa?te?)$E").forEach {
+        find("$B(tonight|tonite|2nite|aj\\s*raa?te?|aaj\\s*raa?te?|ajke\\s*raa?te?|আজ\\s*রাতে?|আজকে\\s*রাতে?)$E").forEach {
             add(it.range.first, it.range.last + 1, today, period = Period.NIGHT)
         }
-        find("$B(tomorrow|tomorow|tommorow|tommorrow|tmrw|tmr|tmrow|2moro|2morrow|agamikal|agami\\s+kal|kalke|kal)$E").forEach {
+        find("$B(tomorrow|tomorow|tommorow|tommorrow|tmrw|tmr|tmrow|2moro|2morrow|agamikal|agami\\s+kal|kalke|kal|আগামীকাল|আগামী\\s+কাল|কালকে|কাল)$E").forEach {
             add(it.range.first, it.range.last + 1, today.plusDays(1))
         }
-        find("$B(today|aj|aaj|ajke|aajke)$E").forEach { add(it.range.first, it.range.last + 1, today) }
+        find("$B(today|aj|aaj|ajke|aajke|আজ|আজকে)$E").forEach { add(it.range.first, it.range.last + 1, today) }
         find("$B(this)\\s+(morning|afternoon|evening)$E").forEach {
             val period =
                 when (it.groupValues[2]) {
@@ -479,18 +491,26 @@ internal class Detectors(
 
     fun periods(): List<PeriodMention> =
         listOf(
-            "$B(?:in\\s+the\\s+)?(morning|sokal|shokal|sokale|shokale)$E" to Period.MORNING,
-            "$B(?:in\\s+the\\s+)?(afternoon|bikal|bikel|bikale|bikele)$E" to Period.AFTERNOON,
-            "$B(dupur|dupure)$E" to Period.NOON,
-            "$B(?:in\\s+the\\s+)?(evening|shondha|sondha|shondhay|sondhay|sondhar)$E" to Period.EVENING,
-            "$B(?:at\\s+)?(night|rat|raat|rate|raate|ratre)$E" to Period.NIGHT,
+            "$B(?:in\\s+the\\s+)?(morning|sokal|shokal|sokale|shokale|সকাল|সকালে|ভোরে)$E" to Period.MORNING,
+            "$B(?:in\\s+the\\s+)?(afternoon|bikal|bikel|bikale|bikele|বিকাল|বিকালে|বিকেল|বিকেলে)$E" to Period.AFTERNOON,
+            "$B(dupur|dupure|দুপুর|দুপুরে)$E" to Period.NOON,
+            "$B(?:in\\s+the\\s+)?(evening|shondha|sondha|shondhay|sondhay|sondhar|সন্ধ্যা|সন্ধ্যায়|সন্ধ্যায়|সন্ধ্যার)$E" to Period.EVENING,
+            "$B(?:at\\s+)?(night|rat|raat|rate|raate|ratre|রাত|রাতে|রাতের)$E" to Period.NIGHT,
         ).flatMap { (pattern, period) -> find(pattern).map { PeriodMention(it.range.first, it.range.last + 1, period) }.toList() }
 
     fun types(): List<TypeMention> {
         val rules =
             listOf(
-                Triple("dinner\\s+date|date\\s+night|on\\s+a\\s+date|candle\\s*light", EntryType.DINNER_DATE, null),
-                Triple("dinner|supper|iftar", EntryType.DINNER, null),
+                Triple("dinner\\s+date|date\\s+night|on\\s+a\\s+date|candle\\s*light|ডিনার\\s+ডেট", EntryType.DINNER_DATE, null),
+                Triple("dinner|supper|iftar|ডিনার|রাতের\\s+খাবার|ইফতার", EntryType.DINNER, null),
+                Triple("মিটিং|মিটিংয়ে|মিটিংয়ে|বৈঠক|আলোচনা|ইন্টারভিউ", EntryType.MEETING, null),
+                Triple("খেলা|ম্যাচ|ক্রিকেট|ফুটবল", EntryType.MATCH, null),
+                Triple("ভ্রমণ|ট্যুর|পিকনিক|বেড়াতে|বেড়াতে", EntryType.TOUR, null),
+                Triple("জন্মদিন", EntryType.BIRTHDAY, null),
+                Triple("ডাক্তার|অ্যাপয়েন্টমেন্ট|অ্যাপয়েন্টমেন্ট|হাসপাতাল", EntryType.APPOINTMENT, null),
+                Triple("ফ্লাইট|বিমানবন্দর", EntryType.FLIGHT, null),
+                Triple("পরীক্ষা", EntryType.EXAM, null),
+                Triple("বিয়ে|বিয়ে|অনুষ্ঠান|পার্টি|ক্লাস|নামাজ", EntryType.EVENT, null),
                 Triple("lunch", EntryType.EVENT, "Lunch"),
                 Triple("breakfast|brunch", EntryType.EVENT, "Breakfast"),
                 Triple("meeting|meet\\s*up|meetup|meet|sit\\s+together|sit\\s+for|sync|stand\\s*up|standup|discussion|interview|call|zoom|google\\s+meet", EntryType.MEETING, null),
@@ -524,16 +544,16 @@ internal class Detectors(
     }
 
     fun approximations(): List<FlagMention> =
-        find("$B(around|about|approx\\.?|approximately|roughly|maybe|probably|tentatively|perhaps|let'?s\\s+try|lets\\s+try|try\\s+to|hoyto|mone\\s+hoy)$E|~")
+        find("$B(around|about|approx\\.?|approximately|roughly|maybe|probably|tentatively|perhaps|let'?s\\s+try|lets\\s+try|try\\s+to|hoyto|mone\\s+hoy|প্রায়|প্রায়|আনুমানিক|হয়তো|হয়তো|মনে\\s+হয়|মনে\\s+হয়)$E|~")
             .map { FlagMention(it.range.first, it.range.last + 1, SpanKind.APPROXIMATE) }
             .toList()
 
     fun importance(): List<FlagMention> {
         val found = mutableListOf<FlagMention>()
-        find("$B(very\\s+important|critical|must\\s+not\\s+miss|can'?t\\s+miss|cannot\\s+miss|life\\s+or\\s+death)$E").forEach {
+        find("$B(very\\s+important|critical|must\\s+not\\s+miss|can'?t\\s+miss|cannot\\s+miss|life\\s+or\\s+death|খুব\\s+জরুরি|খুব\\s+জরুরী|খুবই\\s+জরুরি)$E").forEach {
             found.addIfFree(FlagMention(it.range.first, it.range.last + 1, SpanKind.IMPORTANCE, importance = Importance.CRITICAL), emptyList())
         }
-        find("$B(important|urgent|asap|must|don'?t\\s+forget|do\\s+not\\s+forget|dont\\s+forget|zaruri|jaruri|joruri|onek\\s+important)$E").forEach {
+        find("$B(important|urgent|asap|must|don'?t\\s+forget|do\\s+not\\s+forget|dont\\s+forget|zaruri|jaruri|joruri|onek\\s+important|জরুরি|জরুরী|গুরুত্বপূর্ণ|ভুলবেন\\s+না|ভুলো\\s+না)$E").forEach {
             found.addIfFree(FlagMention(it.range.first, it.range.last + 1, SpanKind.IMPORTANCE, importance = Importance.IMPORTANT), emptyList())
         }
         return found
@@ -543,13 +563,13 @@ internal class Detectors(
         val found = mutableListOf<FlagMention>()
         find(
             "$B(cancel|cancell?ed|called\\s+off|call\\s+off|is\\s+off|it'?s\\s+off|not\\s+happening|won'?t\\s+happen|" +
-                "will\\s+not\\s+happen|hobe\\s+na|bad\\s+(?:dao|dilam|dite\\s+hobe)|batil)$E",
+                "will\\s+not\\s+happen|hobe\\s+na|bad\\s+(?:dao|dilam|dite\\s+hobe)|batil|বাতিল|হবে\\s+না)$E",
         ).forEach {
             found.addIfFree(FlagMention(it.range.first, it.range.last + 1, SpanKind.CHANGE, change = ChangeRequest.Kind.CANCEL), emptyList())
         }
         find(
             "$B(move|moved|shift|shifted|postpone|postponed|reschedule|rescheduled|push|pushed|delay|delayed|prepone|preponed|" +
-                "change|changed|instead|make\\s+it|let'?s\\s+do\\s+it|bring\\s+(?:it\\s+)?forward|pichiye|egiye)$E",
+                "change|changed|instead|make\\s+it|let'?s\\s+do\\s+it|bring\\s+(?:it\\s+)?forward|pichiye|egiye|পিছিয়ে|পিছিয়ে|এগিয়ে|এগিয়ে|পরিবর্তে|বদলে)$E",
         ).forEach {
             found.addIfFree(FlagMention(it.range.first, it.range.last + 1, SpanKind.CHANGE, change = ChangeRequest.Kind.MOVE), emptyList())
         }

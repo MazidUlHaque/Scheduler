@@ -319,4 +319,9 @@
     <string name="transfer_failed">That didn\'t work: the file couldn\'t be read or written.</string>
     <string name="add_to_phone_calendar">Add to phone calendar</string>
     <string name="share_calendar_file">Share as a calendar invite</string>
+    <string name="when_tomorrow_at">tomorrow at %1$s</string>
+    <string name="when_date_at">%1$s at %2$s</string>
+    <string name="list_and">%1$s and %2$s</string>
+    <string name="language">Language</string>
+    <string name="language_desc">Kokhon is available in English and Bangla</string>
 </resources>

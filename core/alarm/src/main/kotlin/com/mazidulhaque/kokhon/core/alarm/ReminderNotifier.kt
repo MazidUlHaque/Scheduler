@@ -229,7 +229,7 @@ class ReminderNotifier(
                 if (until.toMinutes() >=
                     1
                 ) {
-                    context.getString(R.string.starts_in, TimeFormat.duration(until))
+                    context.getString(R.string.starts_in, TimeFormat.duration(context, until))
                 } else {
                     context.getString(R.string.starts_now)
                 }

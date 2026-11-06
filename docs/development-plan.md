@@ -120,11 +120,12 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - Delivered: reminders per plan type with purposes, saved presets, smart snooze, daily summaries, clash and duplicate warnings, calendar, search, Next up widget, Discreet Quick Settings tile, phone-maker auto-start help, and opt-in screenshot detection (content-triggered job, Android 14 selected-photos handled).
 - **Exit:** a feature-complete v1.0 beta
 
-### Phase 5 - Release
+### Phase 5 - Release ✅ (publishing on Google Play is up to the owner)
 - `.ics` export/import, JSON backup
 - Optional sync with the device calendar
 - Bangla/Banglish parsing
 - Play Store listing, privacy policy, signed release workflow
+- Delivered: signed release workflow (AAB + APK on GitHub Releases), release guide, privacy policy, Play listing and data safety answers, `.ics` export/import and JSON backup, "Add to phone calendar" and calendar invites, Bangla script parsing, full Bangla translation with per-app language. Two-way sync with the phone's calendar was not built: exporting, importing and "Add to phone calendar" cover the need without asking for calendar permissions.
 - **Exit:** v1.0.0 on the Play Store
 
 ## 5. Git & GitHub workflow

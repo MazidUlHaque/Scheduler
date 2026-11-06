@@ -7,7 +7,14 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-11-06
+
 ### Added
+- Phase 5: signed release builds and a release workflow; privacy policy and Google Play listing
+- Calendar files: export and import `.ics` (time zones, all-day events, alarms); JSON backup and restore
+- Add a plan to the phone's calendar app, or share it as a calendar invite
+- Bangla: the whole app translated, per-app language on Android 13+, Bangla digits in dates and times
+- The parser understands Bangla script (আজ, কাল, পরশু, রাতে, সকালে, ৯টায়, সাড়ে ৯টা, মিটিং, ডিনার, পরীক্ষা, বাতিল ...)
 - Phase 4: reminders per plan type (get ready, time to leave, pack, check in, prepare, gift), saved presets, smart snooze
 - Daily summary (morning on, evening opt-in); clash and duplicate warnings
 - Month calendar, search, Next up widget, Discreet Quick Settings tile, auto-start help for common phone makers

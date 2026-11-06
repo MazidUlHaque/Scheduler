@@ -236,7 +236,7 @@ private fun Header(
                     state.leftToday,
                     state.leftToday,
                     state.next.title,
-                    TimeFormat.duration(Duration.between(state.now, state.next.start)),
+                    TimeFormat.duration(context, Duration.between(state.now, state.next.start)),
                 )
             }
 
@@ -247,9 +247,13 @@ private fun Header(
                         .toLocalDate()
                 val whenText =
                     if (nextDate == state.today.plusDays(1)) {
-                        "tomorrow at " + TimeFormat.time(context, state.next.start)
+                        stringResource(R.string.when_tomorrow_at, TimeFormat.time(context, state.next.start))
                     } else {
-                        TimeFormat.shortDate(state.next.start) + " at " + TimeFormat.time(context, state.next.start)
+                        stringResource(
+                            R.string.when_date_at,
+                            TimeFormat.shortDate(state.next.start),
+                            TimeFormat.time(context, state.next.start),
+                        )
                     }
                 stringResource(R.string.status_nothing_left_today, state.next.title, whenText)
             }

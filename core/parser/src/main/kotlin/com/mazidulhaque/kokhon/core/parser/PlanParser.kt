@@ -417,9 +417,15 @@ class PlanParser(
             if (cleaned.isNotBlank()) return capitalise(cleaned)
         }
 
-        val base = typeMention?.titleWord ?: typeLabel(type).takeIf { type != EntryType.TASK }
+        // A message written in Bangla script gets a Bangla title.
+        val bangla = segment.any { it in '\u0980'..'\u09FF' }
+        val base =
+            (if (bangla) banglaLabel(type) else null)
+                ?: typeMention?.titleWord
+                ?: typeLabel(type).takeIf { type != EntryType.TASK }
         if (base != null) {
             return when {
+                bangla -> base
                 people.isNotEmpty() -> "$base with ${people.joinToString(" & ")}"
                 location != null && type != EntryType.MEETING -> "$base at ${location.place}"
                 else -> base
@@ -444,6 +450,21 @@ class PlanParser(
         val cleaned = cleanup(raw)
         return if (cleaned.isBlank()) "Plan" else capitalise(cleaned.take(48).trim())
     }
+
+    private fun banglaLabel(type: EntryType): String? =
+        when (type) {
+            EntryType.MEETING -> "মিটিং"
+            EntryType.EVENT -> "অনুষ্ঠান"
+            EntryType.DINNER -> "ডিনার"
+            EntryType.DINNER_DATE -> "ডিনার ডেট"
+            EntryType.TOUR -> "ভ্রমণ"
+            EntryType.MATCH -> "খেলা"
+            EntryType.BIRTHDAY -> "জন্মদিন"
+            EntryType.APPOINTMENT -> "অ্যাপয়েন্টমেন্ট"
+            EntryType.FLIGHT -> "ফ্লাইট"
+            EntryType.EXAM -> "পরীক্ষা"
+            EntryType.TASK, EntryType.OTHER -> null
+        }
 
     private fun typeLabel(type: EntryType): String? =
         when (type) {

@@ -330,6 +330,35 @@ class ScreenTest {
     }
 
     @Test
+    @Config(qualifiers = "bn-w390dp-h844dp-xxhdpi")
+    fun theAppSpeaksBangla() {
+        compose.setContent {
+            KokhonTheme {
+                CaptureScreen(
+                    initialText = "কাল রাত ৯টায় মিটিং",
+                    source = EntrySource.Kind.PASTED_TEXT,
+                    targetId = 0,
+                    onClose = {},
+                    onOpenEntry = {},
+                    onGoHome = {},
+                    onEditDraft = {},
+                    onEditEntry = {},
+                )
+            }
+        }
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("এই মেসেজে একটি প্ল্যান পেয়েছি"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        compose.onNodeWithText("এই মেসেজে একটি প্ল্যান পেয়েছি").assertIsDisplayed()
+        save("capture-bn")
+    }
+
+    @Test
     fun emptyHomeExplainsWhatToDo() {
         compose.setContent { KokhonTheme { HomeScreen(onOpenEntry = {}, onAddPlan = {}, onOpenSettings = {}) } }
         compose.waitUntil(

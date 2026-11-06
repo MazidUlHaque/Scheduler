@@ -94,7 +94,7 @@ fun AlarmScreen(
         Column(modifier = Modifier.padding(top = 40.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 if (untilStart.toMinutes() >= 1) {
-                    stringResource(R.string.starts_in, TimeFormat.duration(untilStart))
+                    stringResource(R.string.starts_in, TimeFormat.duration(context, untilStart))
                 } else {
                     stringResource(R.string.starts_now)
                 },

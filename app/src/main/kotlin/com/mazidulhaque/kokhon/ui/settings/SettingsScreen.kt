@@ -303,6 +303,26 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                Section(stringResource(R.string.language)) {
+                    Row(modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            stringResource(R.string.language_desc),
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                context.openSettings(
+                                    Intent(Settings.ACTION_APP_LOCALE_SETTINGS, "package:${context.packageName}".toUri()),
+                                )
+                            },
+                            modifier = Modifier.heightIn(min = 44.dp),
+                        ) { Text(stringResource(R.string.change), color = MaterialTheme.colorScheme.onSurface) }
+                    }
+                }
+            }
+
             Section(stringResource(R.string.about_app)) {
                 Text(
                     stringResource(R.string.app_name) + " - " + stringResource(R.string.tagline),

@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="channel_reminders">রিমাইন্ডার</string>
+    <string name="channel_reminders_desc">প্ল্যানের আগে সাধারণ রিমাইন্ডার</string>
+    <string name="channel_heads_up">পপ-আপ রিমাইন্ডার</string>
+    <string name="channel_heads_up_desc">স্ক্রিনের ওপরে দেখানো রিমাইন্ডার</string>
+    <string name="channel_alarms">অ্যালার্ম</string>
+    <string name="channel_alarms_desc">গুরুত্বপূর্ণ প্ল্যানের জন্য পূর্ণ-স্ক্রিন অ্যালার্ম। শব্দ কখন নিজে বাজায়, তাই এই চ্যানেল নিঃশব্দ।</string>
+    <string name="channel_quiet">মিস হওয়া অ্যালার্ম</string>
+    <string name="channel_quiet_desc">অ্যালার্ম নিজে থেকে থেমে গেলে দেখানো হয়</string>
+    <string name="starts_in">%1$s পরে শুরু</string>
+    <string name="starts_now">এখনই শুরু হচ্ছে</string>
+    <string name="at_time">%1$s-এ</string>
+    <string name="about_time">প্রায় %1$s-এ</string>
+    <string name="action_done">শেষ</string>
+    <string name="action_snooze_minutes">%1$d মিনিট স্নুজ</string>
+    <string name="action_turn_off">রিমাইন্ডার বন্ধ</string>
+    <string name="action_stop">থামান</string>
+    <string name="alarm_reminder_of">রিমাইন্ডার %1$d / %2$d</string>
+    <string name="alarm_silence_hint">খুব জোরে? এখনই চুপ করাতে যেকোনো ভলিউম বাটন চাপুন, তারপর শান্তভাবে বেছে নিন।</string>
+    <string name="alarm_silenced">চুপ করানো হয়েছে। প্রস্তুত হলে বেছে নিন কী করবেন।</string>
+    <plurals name="alarm_snooze_detail">
+        <item quantity="one">আবার বাজবে %2$s-এ · আর %1$dটি স্নুজ বাকি</item>
+        <item quantity="other">আবার বাজবে %2$s-এ · আর %1$dটি স্নুজ বাকি</item>
+    </plurals>
+    <string name="alarm_no_snoozes_left">আর কোনো স্নুজ বাকি নেই</string>
+    <string name="alarm_aware">আমি জানি - এই প্ল্যানের বাকি রিমাইন্ডার বন্ধ করুন</string>
+    <string name="alarm_stop_last">এই অ্যালার্ম শেষ। এটাই শেষ রিমাইন্ডার ছিল।</string>
+    <string name="alarm_stop_next">এই অ্যালার্ম শেষ। পরের রিমাইন্ডার %1$s-এ।</string>
+    <string name="alarm_quiet_in">%1$d সেকেন্ডে নিজে থেকে থেমে যাবে</string>
+    <string name="alarm_went_quiet">অ্যালার্ম থেমে গেছে: %1$s</string>
+    <string name="alarm_went_quiet_body">আপনার ঠিক করা সময় পর্যন্ত বেজেছে। প্ল্যান খুলতে চাপুন।</string>
+    <string name="alarm_ringing">অ্যালার্ম বাজছে</string>
+    <string name="importance_low">কম</string>
+    <string name="importance_normal">সাধারণ</string>
+    <string name="importance_important">গুরুত্বপূর্ণ</string>
+    <string name="importance_critical">খুব জরুরি</string>
+    <string name="history_created">তৈরি হয়েছে</string>
+    <string name="history_created_from_message">মেসেজ থেকে তৈরি</string>
+    <string name="history_moved">%1$s থেকে %2$s-এ সরানো হয়েছে</string>
+    <string name="history_renamed">নাম বদলে \"%1$s\" করা হয়েছে</string>
+    <string name="history_importance">গুরুত্ব %1$s করা হয়েছে</string>
+    <string name="history_reminders_on">রিমাইন্ডার চালু করা হয়েছে</string>
+    <string name="history_reminders_off">রিমাইন্ডার বন্ধ করা হয়েছে</string>
+    <string name="history_reminders_changed">রিমাইন্ডার বদলানো হয়েছে</string>
+    <string name="history_completed">শেষ হিসেবে চিহ্নিত</string>
+    <string name="history_cancelled">বাতিল</string>
+    <string name="history_reopened">আবার চালু করা হয়েছে</string>
+    <string name="history_details">খুঁটিনাটি সম্পাদনা করা হয়েছে</string>
+    <string name="purpose_get_ready">তৈরি হোন: %1$s</string>
+    <string name="purpose_leave_now">বের হওয়ার সময়: %1$s</string>
+    <string name="purpose_pack">ব্যাগ গোছান: %1$s</string>
+    <string name="purpose_check_in">অনলাইনে চেক-ইন করুন: %1$s</string>
+    <string name="purpose_prepare">প্রস্তুতি নিন: %1$s</string>
+    <string name="purpose_buy_gift">উপহার কিনুন: %1$s</string>
+    <string name="action_remind_before">১০ মিনিট আগে মনে করিয়ো</string>
+    <string name="channel_summary">দৈনিক সারাংশ</string>
+    <string name="channel_summary_desc">সকালে বা রাতে আপনার প্ল্যানের ছোট তালিকা</string>
+    <plurals name="summary_today">
+        <item quantity="one">আজ: %1$dটি প্ল্যান</item>
+        <item quantity="other">আজ: %1$dটি প্ল্যান</item>
+    </plurals>
+    <plurals name="summary_tomorrow">
+        <item quantity="one">আগামীকাল: %1$dটি প্ল্যান</item>
+        <item quantity="other">আগামীকাল: %1$dটি প্ল্যান</item>
+    </plurals>
+    <string name="summary_first">প্রথমটি: %1$s, %2$s-এ</string>
+</resources>

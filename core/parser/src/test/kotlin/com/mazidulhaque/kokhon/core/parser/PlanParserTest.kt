@@ -89,6 +89,14 @@ class PlanParserTest {
             Case("aj bikale 5tay cricket", MATCH, today, "17:00"),
             Case("porshu sokal 10 tay class", EVENT, LocalDate.of(2026, 11, 8), "10:00"),
             Case("kal sondhay 7 tay dinner", DINNER, tomorrow, "19:00"),
+            // Bangla script, with Bangla digits
+            Case("কাল রাত ৯টায় মিটিং", MEETING, tomorrow, "21:00", "মিটিং"),
+            Case("আজ বিকেলে ৫টায় ক্রিকেট খেলা", MATCH, today, "17:00", "খেলা"),
+            Case("পরশু সকাল ১০টায় পরীক্ষা", EXAM, LocalDate.of(2026, 11, 8), "10:00", "পরীক্ষা"),
+            Case("শুক্রবার সন্ধ্যা ৭টায় ডিনার", DINNER, today, "19:00", "ডিনার"),
+            Case("কাল সাড়ে ৯টায় মিটিং", MEETING, tomorrow, "09:30", alternative = "21:30"),
+            Case("আজ রাত ৮টার দিকে ডিনার", DINNER, today, "20:00", approximate = true),
+            Case("কাল সকাল ১০:৩০ এ জরুরি মিটিং", MEETING, tomorrow, "10:30"),
         )
 
     @TestFactory
@@ -164,6 +172,18 @@ class PlanParserTest {
             Importance.CRITICAL,
             parser
                 .parse("flight at 6am tomorrow", now)
+                .drafts
+                .single()
+                .importance,
+        )
+    }
+
+    @Test
+    fun `importance words in Bangla`() {
+        assertEquals(
+            Importance.IMPORTANT,
+            parser
+                .parse("কাল সকাল ১০:৩০ এ জরুরি মিটিং", now)
                 .drafts
                 .single()
                 .importance,
@@ -292,7 +312,7 @@ class PlanParserTest {
 
     @Test
     fun `cancelling a plan`() {
-        listOf("the dinner is cancelled", "tomorrow's meeting is off", "meeting hobe na").forEach { text ->
+        listOf("the dinner is cancelled", "tomorrow's meeting is off", "meeting hobe na", "কালকের মিটিং বাতিল").forEach { text ->
             val change = parser.parse(text, now).change
             assertEquals(ChangeRequest.Kind.CANCEL, change?.kind, text)
         }
