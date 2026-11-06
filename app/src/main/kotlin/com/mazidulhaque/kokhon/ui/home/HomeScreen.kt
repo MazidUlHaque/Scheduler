@@ -78,6 +78,8 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onCapture: (String) -> Unit = {},
     onCaptureImage: (android.net.Uri) -> Unit = {},
+    onSearch: () -> Unit = {},
+    onCalendar: () -> Unit = {},
 ) {
     val images =
         com.mazidulhaque.kokhon.ui.capture
@@ -121,7 +123,7 @@ fun HomeScreen(
             if (current == null) {
                 Box(Modifier.weight(1f))
             } else {
-                Header(current)
+                Header(current, onSearch = onSearch, onCalendar = onCalendar)
                 current.discreetUntil?.let { until ->
                     DiscreetBanner(until = until, onTurnOff = { vm.toggleDiscreet(currentlyOn = true) })
                 }
@@ -200,7 +202,11 @@ private fun rowKey(row: TimelineRow): String =
     }
 
 @Composable
-private fun Header(state: HomeState) {
+private fun Header(
+    state: HomeState,
+    onSearch: () -> Unit,
+    onCalendar: () -> Unit,
+) {
     val context = LocalContext.current
     val hour = state.now.atZone(ZoneId.systemDefault()).hour
     val greeting =
@@ -252,11 +258,16 @@ private fun Header(state: HomeState) {
         modifier = Modifier.padding(start = 22.dp, end = 22.dp, top = 20.dp, bottom = 12.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        Text(
-            TimeFormat.longDate(state.today),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                TimeFormat.longDate(state.today),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f),
+            )
+            IconButton(onClick = onSearch) { Icon(KokhonIcons.Search, contentDescription = stringResource(R.string.search)) }
+            IconButton(onClick = onCalendar) { Icon(KokhonIcons.Calendar, contentDescription = stringResource(R.string.calendar)) }
+        }
         Text(stringResource(greeting), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
         Text(status, style = MaterialTheme.typography.bodyLarge)
     }

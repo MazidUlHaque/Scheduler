@@ -9,11 +9,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.mazidulhaque.kokhon.core.model.EntrySource
+import com.mazidulhaque.kokhon.ui.calendar.CalendarScreen
 import com.mazidulhaque.kokhon.ui.capture.CaptureScreen
 import com.mazidulhaque.kokhon.ui.detail.DetailScreen
 import com.mazidulhaque.kokhon.ui.editor.EditorScreen
 import com.mazidulhaque.kokhon.ui.home.HomeScreen
 import com.mazidulhaque.kokhon.ui.reminders.RemindersScreen
+import com.mazidulhaque.kokhon.ui.search.SearchScreen
 import com.mazidulhaque.kokhon.ui.settings.SettingsScreen
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.serialization.Serializable
@@ -44,6 +46,10 @@ import kotlinx.serialization.Serializable
 )
 
 @Serializable object SettingsRoute
+
+@Serializable object CalendarRoute
+
+@Serializable object SearchRoute
 
 @Composable
 fun KokhonNavHost(
@@ -80,6 +86,8 @@ fun KokhonNavHost(
                 onAddPlan = { nav.navigate(EditorRoute()) },
                 onCapture = { text -> nav.navigate(CaptureRoute(text = text)) },
                 onCaptureImage = { uri -> nav.navigate(CaptureRoute(imageUri = uri.toString(), source = "SCREENSHOT")) },
+                onSearch = { nav.navigate(SearchRoute) },
+                onCalendar = { nav.navigate(CalendarRoute) },
                 onOpenSettings = { nav.navigate(SettingsRoute) },
             )
         }
@@ -132,6 +140,12 @@ fun KokhonNavHost(
                 onEditDraft = { nav.navigate(EditorRoute(fromCapture = true)) { popUpTo<CaptureRoute> { inclusive = true } } },
                 onEditEntry = { id -> nav.navigate(EditorRoute(id)) { popUpTo<CaptureRoute> { inclusive = true } } },
             )
+        }
+        composable<CalendarRoute> {
+            CalendarScreen(onBack = { nav.popBackStack() }, onOpenEntry = { nav.navigate(DetailRoute(it)) })
+        }
+        composable<SearchRoute> {
+            SearchScreen(onBack = { nav.popBackStack() }, onOpenEntry = { nav.navigate(DetailRoute(it)) })
         }
         composable<SettingsRoute> {
             SettingsScreen(onBack = { nav.popBackStack() })

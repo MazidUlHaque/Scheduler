@@ -3,6 +3,7 @@ package com.mazidulhaque.kokhon
 import android.app.Application
 import android.content.Context
 import android.content.Intent
+import androidx.glance.appwidget.updateAll
 import com.mazidulhaque.kokhon.core.alarm.AlarmScheduler
 import com.mazidulhaque.kokhon.core.alarm.DailySummary
 import com.mazidulhaque.kokhon.core.alarm.ReminderCoordinator
@@ -14,6 +15,7 @@ import com.mazidulhaque.kokhon.core.model.Entry
 import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ParserConfig
 import com.mazidulhaque.kokhon.core.parser.PlanParser
+import com.mazidulhaque.kokhon.widget.TodayWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -34,7 +36,9 @@ class KokhonApplication :
     override val entryRepository by lazy { createEntryRepository(this, clock) }
     override val settingsRepository by lazy { SettingsRepository(this) }
     override val alarmScheduler by lazy { AlarmScheduler(this, clock) }
-    override val reminderCoordinator by lazy { ReminderCoordinator(this, entryRepository, alarmScheduler, clock) }
+    override val reminderCoordinator by lazy {
+        ReminderCoordinator(this, entryRepository, alarmScheduler, clock) { TodayWidget().updateAll(this) }
+    }
 
     /** Bangladesh (and a few others) have a Friday weekend, which changes what "this weekend" means. */
     val planParser by lazy {

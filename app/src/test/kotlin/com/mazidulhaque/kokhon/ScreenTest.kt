@@ -9,6 +9,7 @@ import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
 import androidx.test.core.app.ApplicationProvider
 import com.mazidulhaque.kokhon.core.alarm.RingingAlarm
 import com.mazidulhaque.kokhon.core.alarm.ui.AlarmScreen
@@ -246,6 +247,86 @@ class ScreenTest {
         assertEquals(meeting.id, opened)
         val moved = runBlocking { app.entryRepository.get(meeting.id) }!!
         assertEquals(tomorrow.atTime(22, 0).atZone(zone).toInstant(), moved.start)
+    }
+
+    @Test
+    fun calendarShowsTheMonthAndTheChosenDay() {
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        val zone = ZoneId.systemDefault()
+        val today = LocalDate.now(zone)
+        runBlocking {
+            app.reminderCoordinator.save(
+                Entry(title = "Team meeting", type = EntryType.MEETING, start = today.atTime(23, 0).atZone(zone).toInstant()),
+            )
+            app.reminderCoordinator.save(
+                Entry(
+                    title = "Exam",
+                    type = EntryType.EXAM,
+                    start =
+                        today
+                            .plusDays(3)
+                            .atTime(10, 0)
+                            .atZone(zone)
+                            .toInstant(),
+                ),
+            )
+        }
+        compose.setContent {
+            KokhonTheme {
+                com.mazidulhaque.kokhon.ui.calendar
+                    .CalendarScreen(onBack = {}, onOpenEntry = {})
+            }
+        }
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Team meeting"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        save("calendar")
+    }
+
+    @Test
+    fun searchFindsPlansByAnyWord() {
+        shadowOf(app).grantPermissions(Manifest.permission.POST_NOTIFICATIONS)
+        val zone = ZoneId.systemDefault()
+        runBlocking {
+            app.reminderCoordinator.save(
+                Entry(
+                    title = "Dinner",
+                    type = EntryType.DINNER,
+                    start =
+                        LocalDate
+                            .now(zone)
+                            .plusDays(1)
+                            .atTime(20, 0)
+                            .atZone(zone)
+                            .toInstant(),
+                    location = "Gulshan 2",
+                ),
+            )
+        }
+        compose.setContent {
+            KokhonTheme {
+                com.mazidulhaque.kokhon.ui.search
+                    .SearchScreen(onBack = {}, onOpenEntry = {})
+            }
+        }
+        compose
+            .onNode(
+                androidx.compose.ui.test
+                    .hasSetTextAction(),
+            ).performTextInput("gulshan")
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Dinner"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
     }
 
     @Test

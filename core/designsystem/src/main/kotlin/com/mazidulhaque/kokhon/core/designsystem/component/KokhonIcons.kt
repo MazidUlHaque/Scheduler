@@ -56,5 +56,8 @@ object KokhonIcons {
             "M17 16h6",
         )
     val Pencil = icon("Pencil", "M12 20h9", "M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z")
+    val Search = icon("Search", "M11 4a7 7 0 1 0 0.01 0", "M21 21l-4.3-4.3")
+    val Calendar =
+        icon("Calendar", "M5 4h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z", "M16 2v4", "M8 2v4", "M3 10h18")
     val Trash = icon("Trash", "M3 6h18", "M8 6V4h8v2", "M19 6l-1 14H6L5 6")
 }

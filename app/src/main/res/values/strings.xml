@@ -270,4 +270,25 @@
     <string name="morning_summary">Morning summary of today (7:30 AM)</string>
     <string name="evening_summary">Evening summary of tomorrow (9:00 PM)</string>
     <string name="presets_settings_empty">Save a set of reminders from any plan\'s reminder screen to reuse it here.</string>
+    <string name="calendar">Calendar</string>
+    <string name="previous_month">Previous month</string>
+    <string name="next_month">Next month</string>
+    <string name="no_plans_this_day">No plans on this day.</string>
+    <plurals name="n_plans">
+        <item quantity="one">%1$d plan</item>
+        <item quantity="other">%1$d plans</item>
+    </plurals>
+    <string name="search">Search</string>
+    <string name="search_hint">Search by name, place, person or message</string>
+    <string name="no_results">Nothing found for "%1$s".</string>
+    <string name="widget_name">Kokhon: Next up</string>
+    <string name="widget_description">Your next plans at a glance</string>
+    <string name="widget_next_up">Next up</string>
+    <string name="widget_empty">No plans coming up. Tap to add one.</string>
+    <string name="widget_tomorrow">Tomorrow, %1$s</string>
+    <string name="tile_until">Until %1$s</string>
+    <string name="tile_off">Off</string>
+    <string name="check_autostart">Your phone lets Kokhon start in the background</string>
+    <string name="check_autostart_desc">%1$s phones can block reminders unless Kokhon is allowed to auto-start. Kokhon can\'t check this setting, so please open it once.</string>
+    <string name="open">Open</string>
 </resources>

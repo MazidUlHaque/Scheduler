@@ -141,6 +141,21 @@ fun SettingsScreen(onBack: () -> Unit) {
                         context.openSettings(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
                     }
                 }
+                AutoStart.makerName()?.let { maker ->
+                    Row(modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                            Text(stringResource(R.string.check_autostart), style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                stringResource(R.string.check_autostart_desc, maker),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        OutlinedButton(onClick = { AutoStart.open(context) }, modifier = Modifier.heightIn(min = 44.dp)) {
+                            Text(stringResource(R.string.open), color = MaterialTheme.colorScheme.onSurface)
+                        }
+                    }
+                }
             }
 
             Section(stringResource(R.string.discreet_mode)) {

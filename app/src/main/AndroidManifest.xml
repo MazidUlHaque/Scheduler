@@ -35,6 +35,29 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".widget.TodayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/today_widget_info" />
+        </receiver>
+
+        <service
+            android:name=".tile.DiscreetTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_tile_discreet"
+            android:label="@string/discreet_mode"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
+
         <!-- Lets the camera app save a photo for Kokhon to read. -->
         <provider
             android:name="androidx.core.content.FileProvider"

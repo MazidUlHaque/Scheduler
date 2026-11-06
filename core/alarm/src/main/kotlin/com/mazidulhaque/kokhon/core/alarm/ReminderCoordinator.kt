@@ -21,6 +21,8 @@ class ReminderCoordinator(
     private val repository: EntryRepository,
     private val scheduler: AlarmScheduler,
     private val clock: Clock,
+    /** Called after any change, e.g. to refresh home-screen widgets. */
+    private val onChanged: suspend () -> Unit = {},
 ) {
     /**
      * Saves the entry, re-registers its alarms and records what changed in its history.
@@ -36,6 +38,7 @@ class ReminderCoordinator(
         val saved = repository.save(entry)
         scheduler.schedule(saved)
         if (recordHistory) record(before, saved, sourceText)
+        onChanged()
         return saved
     }
 
@@ -97,6 +100,7 @@ class ReminderCoordinator(
         scheduler.cancel(entry.id)
         clearNotifications(entry.id)
         repository.delete(entry.id)
+        onChanged()
     }
 
     /** Restores a deleted entry (Undo). Keeps its id so links still work. */
