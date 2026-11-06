@@ -3,9 +3,8 @@
 Thanks for your interest in Scheduler!
 
 ## Ground rules
-- By contributing, you agree that your contribution is licensed to the project
-  owner under the same terms as the project ([LICENSE](LICENSE)), and that the
-  owner may also relicense it, including under commercial terms.
+- This is an **All Rights Reserved** project. By submitting a contribution, you
+  agree to the contribution terms in section 4 of [LICENSE](LICENSE).
 - Be respectful. See the [Code of Conduct](CODE_OF_CONDUCT.md).
 
 ## Reporting bugs / requesting features

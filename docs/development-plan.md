@@ -1,6 +1,6 @@
 # Development Plan & Architecture
 
-> Status: Draft v1 · Author: Mazidul Haque · Last updated: 2026-11-06
+> Status: Draft v1 · Author: Md. Mazid-Ul-Haque · Last updated: 2026-11-06
 
 ## 1. Tech stack
 
@@ -83,7 +83,7 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 
 ### Phase 1 — MVP: manual scheduling + reliable, controllable reminders
 - Domain model and Room schema (with migrations): Entry, ImportanceLevel, ReminderChain, ReminderStep, ChainPreset
-- Timeline home screen; editor with full control (edit, rename, reschedule, change type/importance, duplicate, cancel, delete, undo)
+- Timeline home screen with status styling (completed = faded + green check, in a collapsible "Done" section); editor with full control (edit, rename, reschedule, change type/importance, duplicate, cancel, delete, undo)
 - Importance levels with default reminder chains; per-entry chain editor; saved presets
 - AlarmScheduler with exact alarms, boot and time-change rescheduling; moving an entry moves its chain
 - Notification channels and actions (Done / Snooze / Turn off reminders)
@@ -98,7 +98,7 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - Parse preview screen with highlighted chips and an ambiguity picker
 - Several plans in one message; approximate flag
 - Importance suggestion from text and type, shown with its reminder chain in the preview
-- **Update from new text:** match the message to an existing entry, show a before/after diff, choose Update existing or Create new
+- **Update from new text:** targeted flow (select entry → paste/screenshot) and central flow (paste → ranked list of all matched entries), before/after diff, Update / Update selected / Create new / Mark cancelled
 - **Exit:** "let's try to sit for a meeting tomorrow around 9:30 pm" → Meeting, tomorrow, 21:30, approximate. Three taps from WhatsApp. Sharing "let's make it 10 pm instead" then offers to update that same meeting.
 
 ### Phase 3 — Screenshot capture
@@ -131,3 +131,22 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - Versions follow Semantic Versioning, tracked in [CHANGELOG.md](../CHANGELOG.md).
 - GitHub Issues track work, with labels: `type:feature`, `type:bug`, `area:parser`, `area:alarm`, `area:ui`, `phase:1`…
 - A GitHub Project board (Backlog → In progress → Review → Done) and one Milestone per phase.
+
+## 6. Visual identity (draft)
+
+Warm and fresh. No deep blues.
+
+| Token | Hex | Use |
+|-------|-----|-----|
+| Ink | `#1E2420` | Text, the "Next up" hero card |
+| Ground | `#F4F5F0` | App background |
+| Tangerine | `#C4461C` | Primary actions (Save, Update) |
+| Tangerine soft | `#FCE6DC` | Capture bar, highlights |
+| Done green | `#2E8B57` | Completed check badge, toggles |
+| Meeting | `#0F7C72` | Teal |
+| Dinner date | `#C23B6B` | Rose |
+| Match | `#B7770B` | Amber |
+| Task | `#7A4BB0` | Plum |
+| Tour | `#5E7A22` | Olive |
+
+Font: Manrope. Completed entries are shown at 70% opacity with a green check badge, in a collapsible "Done" section.

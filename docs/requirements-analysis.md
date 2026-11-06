@@ -1,6 +1,6 @@
 # Requirement Analysis — Scheduler (working name)
 
-> Status: Draft v2 · Author: Mazidul Haque · Last updated: 2026-11-06
+> Status: Draft v2 · Author: Md. Mazid-Ul-Haque · Last updated: 2026-11-06
 >
 > v2: added importance levels and reminder chains, the alarm-screen and discreet-mode requirements, updating entries from new text, and full edit control. Removed the "share confirmation back" feature.
 
@@ -88,6 +88,11 @@ natural-language input.
 - FR-1.6 **Full control** over every entry: edit any field, rename, reschedule (including quick "+1 hour" / "tomorrow same time"), change type and importance, duplicate, cancel, delete. Destructive actions offer Undo.
 - FR-1.7 Recurring entries: edit or delete "this one only" or "this and all following".
 - FR-1.8 Edit history per entry (what changed, and whether it came from a new message or a manual edit).
+- FR-1.9 **Status and the look of past entries.** Statuses: Upcoming, Ongoing, Completed, Cancelled (and Missed for tasks that weren't ticked off).
+  - When an event's end time passes, it becomes **Completed** automatically.
+  - Completed entries are **faded**, with a **green check badge**, and sink below active ones in the timeline (a collapsible "Done" section).
+  - Cancelled entries are faded and struck through, with a grey badge.
+  - A tap restores any entry to active (e.g. if it was postponed).
 
 ### FR-2 Smart capture & parsing
 - FR-2.1 Text input: paste, share (`ACTION_SEND text/plain`), quick-add bar.
@@ -99,7 +104,12 @@ natural-language input.
 - FR-2.7 One message containing several plans → several draft entries.
 - FR-2.8 Every parse goes through a preview screen. Nothing is saved silently.
 - FR-2.9 Parsing works offline.
-- FR-2.10 **Update from new text.** When captured text looks like it refers to an existing entry (same type, people or title within a nearby time window, or words like "move", "shift", "instead", "postpone", "cancel"), the preview offers **Update existing** with a before/after view of each change, or **Create new**. You always choose; nothing is overwritten silently.
+- FR-2.10 **Update from new text** — two ways in, one review screen:
+  - **a. Targeted update:** select an entry first, choose *Update from message*, then paste the text or pick a screenshot. Only that entry is compared.
+  - **b. Central capture:** paste or share a message normally. If it looks like a change (words like "move", "shift", "instead", "postpone", "cancel", "make it", or the same type, people or title within a nearby time window), the preview lists **all matched entries**, ranked by how well they match, each with its match reason.
+  - For each candidate, a **before → after** diff of every changed field (date, time, place, title, importance), with the app's suggested choice preselected.
+  - Actions: **Update this one**, **Update selected** (several at once), **Create new instead**, or **Cancel**. "Cancel" in the message (e.g. "meeting is off") offers **Mark cancelled**.
+  - Nothing is overwritten silently. Every update is recorded in the entry's edit history and can be undone.
 - FR-2.11 Suggest an importance level from the text ("important", "urgent", "must", "don't forget") and the event type (a flight or exam is Critical by default). You can always change it.
 
 ### FR-3 Image / screenshot capture

@@ -9,7 +9,7 @@ Paste it, share it, or screenshot it. Scheduler works out the *what*, *when* and
 ![Platform](https://img.shields.io/badge/platform-Android-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)
 ![Status](https://img.shields.io/badge/status-planning-orange)
-![License](https://img.shields.io/badge/license-PolyForm%20Noncommercial%201.0.0-blue)
+![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)
 
 </div>
 
@@ -55,12 +55,10 @@ Bug reports and ideas are welcome. Please read [CONTRIBUTING.md](CONTRIBUTING.md
 
 ## 📄 License & credit
 
-**Copyright © 2026 Mazidul Haque. All rights not expressly granted are reserved.**
+**Copyright © 2026 Md. Mazid-Ul-Haque. All Rights Reserved.**
 
-This project is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE):
+- ✅ Anyone may **install and use the official app** for personal use, free of charge.
+- 👀 The source code is public **to view only**.
+- ❌ Copying, modifying, redistributing or using the code commercially requires **written permission** from the author.
 
-- ✅ You may use, study, modify and share it for **personal and other noncommercial purposes**.
-- ✅ You **must keep the copyright notice and credit** to the author in any copy or derivative (see [NOTICE](NOTICE)).
-- ❌ **Commercial use** (selling the app, or using it in a paid product or service) requires written permission from the author.
-
-The name "Scheduler", the app icon and other branding are not licensed for reuse.
+See [LICENSE](LICENSE) for the full terms.

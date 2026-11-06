@@ -9,5 +9,5 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ### Added
 - Requirement analysis and development plan (`docs/`)
-- License (PolyForm Noncommercial 1.0.0), NOTICE, and community health files
+- All Rights Reserved license, NOTICE, and community health files
 - Issue and pull-request templates
