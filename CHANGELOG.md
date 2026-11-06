@@ -8,6 +8,10 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- Phase 4: reminders per plan type (get ready, time to leave, pack, check in, prepare, gift), saved presets, smart snooze
+- Daily summary (morning on, evening opt-in); clash and duplicate warnings
+- Month calendar, search, Next up widget, Discreet Quick Settings tile, auto-start help for common phone makers
+- Opt-in: offer plans from new screenshots (read on the phone; only notifies when a plan is found)
 - Phase 3: make or update plans from screenshots and photos (Add a plan > From a screenshot / Take a photo, share an image to Kokhon, Pick a screenshot when updating)
 - On-device text recognition (ML Kit bundled model): nothing is uploaded
 - Chat screenshot cleanup: status bar, read receipts, timestamps, date headers and typing box removed; wrapped lines joined

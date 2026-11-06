@@ -20,6 +20,7 @@ class SettingsViewModel(
     private val repository: SettingsRepository,
     val clock: Clock,
     private val summary: DailySummary,
+    private val onWatchChanged: (Boolean) -> Unit,
 ) : ViewModel() {
     val settings: StateFlow<ReminderSettings?> =
         repository.settings.stateIn(
@@ -44,6 +45,13 @@ class SettingsViewModel(
         viewModelScope.launch {
             repository.setSummaries(morning, evening)
             summary.scheduleNext(morning, evening)
+        }
+    }
+
+    fun setWatchScreenshots(enabled: Boolean) {
+        viewModelScope.launch {
+            repository.setWatchScreenshots(enabled)
+            onWatchChanged(enabled)
         }
     }
 

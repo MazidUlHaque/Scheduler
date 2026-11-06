@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import android.content.Intent
 import androidx.glance.appwidget.updateAll
+import androidx.work.Configuration
 import com.mazidulhaque.kokhon.core.alarm.AlarmScheduler
 import com.mazidulhaque.kokhon.core.alarm.DailySummary
 import com.mazidulhaque.kokhon.core.alarm.ReminderCoordinator
@@ -15,6 +16,7 @@ import com.mazidulhaque.kokhon.core.model.Entry
 import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ParserConfig
 import com.mazidulhaque.kokhon.core.parser.PlanParser
+import com.mazidulhaque.kokhon.screenshots.ScreenshotWatcher
 import com.mazidulhaque.kokhon.widget.TodayWidget
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -30,7 +32,12 @@ import java.time.DayOfWeek
  */
 class KokhonApplication :
     Application(),
-    ReminderHost {
+    ReminderHost,
+    Configuration.Provider {
+    /** WorkManager's job ids stay inside this range, away from Kokhon's own job ids. */
+    override val workManagerConfiguration: Configuration =
+        Configuration.Builder().setJobSchedulerJobIdRange(WORK_JOB_ID_MIN, WORK_JOB_ID_MAX).build()
+
     override val clock: Clock = Clock.systemDefaultZone()
 
     override val entryRepository by lazy { createEntryRepository(this, clock) }
@@ -65,6 +72,7 @@ class KokhonApplication :
         appScope.launch {
             val settings = settingsRepository.current()
             dailySummary.scheduleNext(settings.morningSummary, settings.eveningSummary)
+            ScreenshotWatcher.update(this@KokhonApplication, settings.watchScreenshots)
         }
     }
 
@@ -76,4 +84,9 @@ class KokhonApplication :
             .setAction(MainActivity.ACTION_OPEN_ENTRY)
             .putExtra(MainActivity.EXTRA_ENTRY_ID, entryId)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+
+    companion object {
+        const val WORK_JOB_ID_MIN = 10_000
+        const val WORK_JOB_ID_MAX = 20_000
+    }
 }

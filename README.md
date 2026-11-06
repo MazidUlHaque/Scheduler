@@ -28,6 +28,7 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 | 🎚️ | **Importance levels & reminder chains** | Kokhon suggests how important a plan is and a matching chain (e.g. 30, 15 and 5 min before). Accept it in one tap or change anything. |
 | ⏰ | **Calm, clear alarms** | A big Stop button, a separate Snooze, a ring limit, "I'm aware - no more reminders", and a discreet vibrate-only mode |
 | ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and Kokhon updates the existing plan. |
+| 📅 | **Calendar, search & widget** | Month view, search across everything, a "Next up" home-screen widget and a Discreet Quick Settings tile |
 | 🔒 | **Private by design** | Text recognition and parsing run on your phone. No account and no cloud needed. |
 
 ## Screenshots
@@ -77,7 +78,7 @@ docs/                 Requirements, plan and design decisions
 - [x] Phase 1: Manual scheduling + reliable reminders & alarms
 - [x] Phase 2: Text capture (paste / share) with smart parsing
 - [x] Phase 3: Screenshot capture (on-device OCR)
-- [ ] Phase 4: Smart reminders, widgets, UX polish
+- [x] Phase 4: Smart reminders, widgets, UX polish
 - [ ] Phase 5: Release on Google Play
 
 ## Contributing

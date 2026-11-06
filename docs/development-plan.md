@@ -110,13 +110,14 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - Delivered: `core:ocr` (ML Kit bundled model, offline), screenshot cleanup in `core:parser` (status bar, receipts, timestamps, typing box, date headers, wrapped lines), "message was sent yesterday" reference dates, Photo Picker, camera via the system camera app, sharing images to Kokhon, and screenshots in "Update from a message". Automatic screenshot detection moves to Phase 4 (it needs a media permission and should stay opt-in).
 - **Exit:** a WhatsApp or Messenger screenshot produces the same result as Phase 2
 
-### Phase 4 - Smart reminders & UX polish
+### Phase 4 - Smart reminders & UX polish ✅
 - Extra reminder profiles per event type (get-ready, leave-by, packing checklist)
 - Smart snooze ("until 10 min before")
 - Reliability Doctor
 - Morning and evening digests
 - Glance widgets, Quick Settings tile
 - Calendar month view, search, conflict and duplicate detection
+- Delivered: reminders per plan type with purposes, saved presets, smart snooze, daily summaries, clash and duplicate warnings, calendar, search, Next up widget, Discreet Quick Settings tile, phone-maker auto-start help, and opt-in screenshot detection (content-triggered job, Android 14 selected-photos handled).
 - **Exit:** a feature-complete v1.0 beta
 
 ### Phase 5 - Release

@@ -67,12 +67,22 @@ fun durationText(value: Duration): String =
 fun SettingsScreen(onBack: () -> Unit) {
     val app = kokhonApp()
     val context = LocalContext.current
-    val vm: SettingsViewModel = viewModel { SettingsViewModel(app.settingsRepository, app.clock, app.dailySummary) }
+    val vm: SettingsViewModel =
+        viewModel {
+            SettingsViewModel(app.settingsRepository, app.clock, app.dailySummary) { enabled ->
+                com.mazidulhaque.kokhon.screenshots.ScreenshotWatcher
+                    .update(app, enabled)
+            }
+        }
     val settings by vm.settings.collectAsStateWithLifecycle()
     var refresh by remember { mutableIntStateOf(0) }
     LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { refresh++ }
     val notificationPermission =
         rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { refresh++ }
+    val photoPermission =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+            vm.setWatchScreenshots(granted)
+        }
     val prefs = settings ?: return
 
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
@@ -236,6 +246,28 @@ fun SettingsScreen(onBack: () -> Unit) {
                     null,
                     prefs.eveningSummary,
                 ) { vm.setSummaries(prefs.morningSummary, it) }
+            }
+
+            Section(stringResource(R.string.screenshot_section)) {
+                val watcher = com.mazidulhaque.kokhon.screenshots.ScreenshotWatcher
+                SwitchRow(
+                    stringResource(R.string.watch_screenshots),
+                    stringResource(R.string.watch_screenshots_desc),
+                    prefs.watchScreenshots && watcher.hasPermission(context),
+                ) { enabled ->
+                    if (enabled && !watcher.hasPermission(context)) {
+                        photoPermission.launch(watcher.permission())
+                    } else {
+                        vm.setWatchScreenshots(enabled)
+                    }
+                }
+                if (prefs.watchScreenshots && watcher.hasOnlySelectedPhotos(context)) {
+                    Text(
+                        stringResource(R.string.only_selected_photos),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = KokhonColors.StopText,
+                    )
+                }
             }
 
             Section(stringResource(R.string.my_presets)) {

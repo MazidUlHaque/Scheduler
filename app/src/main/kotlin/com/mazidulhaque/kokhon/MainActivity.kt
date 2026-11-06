@@ -42,6 +42,10 @@ class MainActivity : ComponentActivity() {
                 entryToOpen.value = intent.getLongExtra(EXTRA_ENTRY_ID, 0).takeIf { it != 0L }
             }
 
+            ACTION_OPEN_IMAGE -> {
+                sharedImage.value = intent.getStringExtra(EXTRA_IMAGE_URI)
+            }
+
             Intent.ACTION_SEND -> {
                 if (intent.type?.startsWith("image/") == true) {
                     val uri = IntentCompat.getParcelableExtra(intent, Intent.EXTRA_STREAM, android.net.Uri::class.java)
@@ -58,5 +62,7 @@ class MainActivity : ComponentActivity() {
     companion object {
         const val ACTION_OPEN_ENTRY = "com.mazidulhaque.kokhon.action.OPEN_ENTRY"
         const val EXTRA_ENTRY_ID = "entry_id"
+        const val ACTION_OPEN_IMAGE = "com.mazidulhaque.kokhon.action.OPEN_IMAGE"
+        const val EXTRA_IMAGE_URI = "image_uri"
     }
 }

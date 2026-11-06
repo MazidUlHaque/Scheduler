@@ -291,4 +291,11 @@
     <string name="check_autostart">Your phone lets Kokhon start in the background</string>
     <string name="check_autostart_desc">%1$s phones can block reminders unless Kokhon is allowed to auto-start. Kokhon can\'t check this setting, so please open it once.</string>
     <string name="open">Open</string>
+    <string name="screenshot_section">Screenshots</string>
+    <string name="watch_screenshots">Offer plans from new screenshots</string>
+    <string name="watch_screenshots_desc">When a new screenshot contains a plan, Kokhon offers to save it. The screenshot is read on your phone and never uploaded. Needs access to your photos.</string>
+    <string name="screenshot_channel">Plans found in screenshots</string>
+    <string name="screenshot_plan_found">Make it a plan?</string>
+    <string name="screenshot_change_found">This screenshot changes one of your plans</string>
+    <string name="only_selected_photos">Kokhon can only see the photos you picked, so it can\'t notice new screenshots. Allow access to all photos in Android settings to use this.</string>
 </resources>
