@@ -42,6 +42,8 @@ data class EditorState(
 
 class EditorViewModel(
     private val id: Long,
+    /** A plan found in a message, to finish here. Saved as a new entry that keeps its source message. */
+    private val prefill: Entry?,
     private val repository: EntryRepository,
     private val coordinator: ReminderCoordinator,
     private val clock: Clock,
@@ -54,12 +56,14 @@ class EditorViewModel(
         viewModelScope.launch {
             val existing = if (id != 0L) repository.get(id) else null
             original = existing
+            val base = existing ?: prefill
             mutableState.value =
-                if (existing != null) {
+                if (base != null) {
+                    val existing = base
                     val local = existing.start.atZone(clock.zone)
                     EditorState(
                         loaded = true,
-                        isNew = false,
+                        isNew = original == null,
                         title = existing.title,
                         type = existing.type,
                         date = local.toLocalDate(),
@@ -133,7 +137,7 @@ class EditorViewModel(
         val start = startInstant(s)
         val base = original
         val entry =
-            (base ?: Entry(title = s.title, type = s.type, start = start)).copy(
+            (base ?: prefill ?: Entry(title = s.title, type = s.type, start = start)).copy(
                 title = s.title.trim(),
                 type = s.type,
                 start = start,
@@ -147,7 +151,7 @@ class EditorViewModel(
                 manualStatus = if (base != null && base.start != start) null else base?.manualStatus,
             )
         viewModelScope.launch {
-            val saved = coordinator.save(entry)
+            val saved = coordinator.save(entry, sourceText = if (base == null) prefill?.source?.originalText else null)
             mutableState.update { it.copy(savedId = saved.id) }
         }
     }

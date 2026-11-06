@@ -24,6 +24,7 @@ rootProject.name = "Kokhon"
 
 include(":app")
 include(":core:model")
+include(":core:parser")
 include(":core:designsystem")
 include(":core:data")
 include(":core:alarm")

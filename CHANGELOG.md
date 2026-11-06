@@ -8,6 +8,11 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 ## [Unreleased]
 
 ### Added
+- Phase 2: make plans from pasted or shared messages (share sheet "Make it a plan", "Add a plan" > "Paste a message", copied-message suggestion)
+- On-device message parser: relative dates, weekdays, explicit dates, times, ranges, "in 2 hours", approximate words, plan types, people, places, importance, several plans per message, common Banglish
+- Review sheet with highlighted understood words (tap to fix), AM/PM choice for ambiguous times, -15 / +15 nudges
+- Update existing plans from a message: ranked matches with before/after, tick to update several, cancel support; or pick the plan first ("Update from a message")
+- Per-plan history (database version 2, automatic migration)
 - Phase 1: create, edit, rename, reschedule, duplicate, cancel and delete plans (with Undo)
 - Home timeline: finished plans above the Now line (faded, green check), upcoming below, plain-language status sentence
 - Importance levels with default reminder chains; reminder editor with a ruler, per-step style and on/off, add/remove

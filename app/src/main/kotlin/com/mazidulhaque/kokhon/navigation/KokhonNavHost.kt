@@ -8,6 +8,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.mazidulhaque.kokhon.core.model.EntrySource
+import com.mazidulhaque.kokhon.ui.capture.CaptureScreen
 import com.mazidulhaque.kokhon.ui.detail.DetailScreen
 import com.mazidulhaque.kokhon.ui.editor.EditorScreen
 import com.mazidulhaque.kokhon.ui.home.HomeScreen
@@ -22,9 +24,17 @@ import kotlinx.serialization.Serializable
     val id: Long,
 )
 
-/** id = 0 creates a new plan. */
+/** id = 0 creates a new plan; [fromCapture] starts it from a plan found in a message. */
 @Serializable data class EditorRoute(
     val id: Long = 0,
+    val fromCapture: Boolean = false,
+)
+
+/** Turn a message into a plan, or update plan [targetId] from it. */
+@Serializable data class CaptureRoute(
+    val text: String = "",
+    val source: String = "PASTED_TEXT",
+    val targetId: Long = 0,
 )
 
 @Serializable data class RemindersRoute(
@@ -34,7 +44,10 @@ import kotlinx.serialization.Serializable
 @Serializable object SettingsRoute
 
 @Composable
-fun KokhonNavHost(entryToOpen: MutableStateFlow<Long?>) {
+fun KokhonNavHost(
+    entryToOpen: MutableStateFlow<Long?>,
+    sharedText: MutableStateFlow<String?>,
+) {
     val nav = rememberNavController()
     val pending by entryToOpen.collectAsStateWithLifecycle()
     LaunchedEffect(pending) {
@@ -43,11 +56,19 @@ fun KokhonNavHost(entryToOpen: MutableStateFlow<Long?>) {
             entryToOpen.value = null
         }
     }
+    val shared by sharedText.collectAsStateWithLifecycle()
+    LaunchedEffect(shared) {
+        shared?.let {
+            nav.navigate(CaptureRoute(text = it, source = "SHARED_TEXT")) { launchSingleTop = true }
+            sharedText.value = null
+        }
+    }
     NavHost(navController = nav, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(
                 onOpenEntry = { nav.navigate(DetailRoute(it)) },
                 onAddPlan = { nav.navigate(EditorRoute()) },
+                onCapture = { text -> nav.navigate(CaptureRoute(text = text)) },
                 onOpenSettings = { nav.navigate(SettingsRoute) },
             )
         }
@@ -58,15 +79,18 @@ fun KokhonNavHost(entryToOpen: MutableStateFlow<Long?>) {
                 onBack = { nav.popBackStack() },
                 onEdit = { nav.navigate(EditorRoute(id)) },
                 onEditReminders = { nav.navigate(RemindersRoute(id)) },
+                onUpdateFromMessage = { nav.navigate(CaptureRoute(targetId = id)) },
                 onOpenEntry = { newId ->
                     nav.navigate(DetailRoute(newId)) { popUpTo<DetailRoute> { inclusive = true } }
                 },
             )
         }
         composable<EditorRoute> { entry ->
-            val id = entry.toRoute<EditorRoute>().id
+            val route = entry.toRoute<EditorRoute>()
+            val id = route.id
             EditorScreen(
                 id = id,
+                fromCapture = route.fromCapture,
                 onBack = { nav.popBackStack() },
                 onSaved = { savedId ->
                     if (id == 0L) {
@@ -82,6 +106,19 @@ fun KokhonNavHost(entryToOpen: MutableStateFlow<Long?>) {
                 id = entry.toRoute<RemindersRoute>().id,
                 onBack = { nav.popBackStack() },
                 onOpenAlarmSettings = { nav.navigate(SettingsRoute) },
+            )
+        }
+        composable<CaptureRoute> { entry ->
+            val route = entry.toRoute<CaptureRoute>()
+            CaptureScreen(
+                initialText = route.text,
+                source = EntrySource.Kind.entries.firstOrNull { it.name == route.source } ?: EntrySource.Kind.PASTED_TEXT,
+                targetId = route.targetId,
+                onClose = { nav.popBackStack() },
+                onOpenEntry = { id -> nav.navigate(DetailRoute(id)) { popUpTo<CaptureRoute> { inclusive = true } } },
+                onGoHome = { nav.popBackStack(HomeRoute, inclusive = false) },
+                onEditDraft = { nav.navigate(EditorRoute(fromCapture = true)) { popUpTo<CaptureRoute> { inclusive = true } } },
+                onEditEntry = { id -> nav.navigate(EditorRoute(id)) { popUpTo<CaptureRoute> { inclusive = true } } },
             )
         }
         composable<SettingsRoute> {

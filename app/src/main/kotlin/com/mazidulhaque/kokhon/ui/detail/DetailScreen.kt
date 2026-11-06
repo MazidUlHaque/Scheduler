@@ -61,6 +61,7 @@ fun DetailScreen(
     onEdit: () -> Unit,
     onEditReminders: () -> Unit,
     onOpenEntry: (Long) -> Unit,
+    onUpdateFromMessage: () -> Unit = {},
 ) {
     val app = kokhonApp()
     val context = LocalContext.current
@@ -69,6 +70,7 @@ fun DetailScreen(
             DetailViewModel(id, app.entryRepository, app.reminderCoordinator, app.clock, app.pendingUndo)
         }
     val entry by vm.entry.collectAsStateWithLifecycle()
+    val history by vm.history.collectAsStateWithLifecycle()
     var renaming by remember { mutableStateOf(false) }
     val current = entry ?: return
     val status = current.statusAt(vm.clock.instant())
@@ -179,6 +181,7 @@ fun DetailScreen(
 
             Column {
                 ActionRow(stringResource(R.string.reschedule), onClick = onEdit)
+                ActionRow(stringResource(R.string.update_from_message), onClick = onUpdateFromMessage)
                 ActionRow(stringResource(R.string.change_reminders), onClick = onEditReminders)
                 val copyTemplate = stringResource(R.string.copy_suffix, "%s")
                 ActionRow(
@@ -210,6 +213,34 @@ fun DetailScreen(
                 }
             }
             current.notes?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+
+            if (history.isNotEmpty()) {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(
+                        stringResource(R.string.history),
+                        style = MaterialTheme.typography.titleSmall,
+                        modifier = Modifier.semantics { heading() },
+                    )
+                    history.forEach { item ->
+                        Column {
+                            Text(item.summary, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                TimeFormat.shortDate(item.at) + ", " + TimeFormat.time(context, item.at),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            item.sourceText?.takeIf { it != current.source.originalText }?.let {
+                                Text(
+                                    stringResource(R.string.history_from_message, it),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    fontStyle = FontStyle.Italic,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         Button(

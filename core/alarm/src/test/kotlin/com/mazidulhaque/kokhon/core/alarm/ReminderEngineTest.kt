@@ -12,6 +12,7 @@ import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderStyle
 import com.mazidulhaque.kokhon.core.model.scheduledReminders
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -83,6 +84,20 @@ class ReminderEngineTest {
             val deleted = app.reminderCoordinator.save(meeting())
             app.reminderCoordinator.delete(deleted)
             assertTrue(shadowOf(alarmManager).scheduledAlarms.isEmpty())
+        }
+
+    @Test
+    fun everyChangeIsRecordedInTheHistory() =
+        runBlocking {
+            val created = app.reminderCoordinator.save(meeting(), sourceText = "meeting tomorrow at 9:30 pm")
+            app.reminderCoordinator.save(created.rescheduledTo(start.plus(Duration.ofMinutes(30))), sourceText = "make it 10")
+            app.reminderCoordinator.setStatus(created.id, EntryStatus.CANCELLED)
+            val history = app.entryRepository.observeHistory(created.id).first()
+            assertEquals(
+                listOf("Cancelled", "Moved from Sat, 7 Nov, 3:30 PM to Sat, 7 Nov, 4:00 PM", "Created from a message"),
+                history.map { it.summary },
+            )
+            assertEquals("make it 10", history[1].sourceText)
         }
 
     @Test

@@ -2,6 +2,7 @@
 <resources>
     <string name="app_name">Kokhon</string>
     <string name="tagline">Know When</string>
+    <string name="share_label">Make it a plan</string>
 
     <!-- Home -->
     <string name="greeting_morning">Good morning</string>
@@ -18,7 +19,7 @@
     <string name="status_happening_now">%1$s is happening now.</string>
     <string name="now">Now</string>
     <string name="empty_title">Your day is clear</string>
-    <string name="empty_body">Tap Add a plan to create your first one. Soon you\'ll also be able to paste a chat message like "let\'s meet tomorrow at 9:30 pm".</string>
+    <string name="empty_body">Copy a chat message like "let\'s meet tomorrow at 9:30 pm" and tap Add a plan, or share it to Kokhon from any app.</string>
     <string name="add_a_plan">Add a plan</string>
     <string name="discreet">Discreet</string>
     <string name="settings">Settings</string>
@@ -178,4 +179,62 @@
     <string name="copyright">© 2026 Md. Mazid-Ul-Haque. All rights reserved.</string>
     <string name="version">Version %1$s</string>
     <string name="back">Back</string>
+
+    <!-- Capture -->
+    <string name="capture_title">Make a plan from a message</string>
+    <string name="update_title">Update from a message</string>
+    <string name="message_hint">Paste or type the message, e.g. "let\'s meet tomorrow at 9:30 pm"</string>
+    <string name="paste">Paste</string>
+    <string name="find_the_plan">Find the plan</string>
+    <string name="found_one_plan">I found a plan in this message</string>
+    <plurals name="found_plans">
+        <item quantity="one">I found %1$d plan in this message</item>
+        <item quantity="other">I found %1$d plans in this message</item>
+    </plurals>
+    <string name="capture_legend">Highlighted words were understood. Words underlined in amber are my guesses. Tap a word to change it.</string>
+    <string name="am_or_pm">Did you mean %1$s or %2$s?</string>
+    <string name="importance_line">%1$s importance.</string>
+    <string name="change">Change</string>
+    <plurals name="save_n_plans">
+        <item quantity="one">Save plan</item>
+        <item quantity="other">Save %1$d plans</item>
+    </plurals>
+    <string name="edit_all_details">Edit all details</string>
+    <string name="edit_message">Edit the message</string>
+    <string name="nothing_found">I couldn\'t find a date or time in this message.</string>
+    <string name="nothing_found_body">You can add one yourself, or change the message and try again.</string>
+    <string name="make_plan_anyway">Make a plan anyway</string>
+    <string name="include_plan_cd">Include %1$s</string>
+    <string name="changes_existing">This message changes a plan you already have</string>
+    <string name="update_selected_from">Update "%1$s" from this message</string>
+    <string name="question_move">Move %1$s to %2$s?</string>
+    <string name="question_cancel">Cancel %1$s?</string>
+    <string name="was">Was</string>
+    <string name="will_be">Will be</string>
+    <string name="reminders_move_too">Its reminders move too: %1$s.</string>
+    <string name="also_could_be">Also could be (tick to update too)</string>
+    <string name="yes_move_it">Yes, move it</string>
+    <string name="yes_cancel_it">Yes, cancel it</string>
+    <plurals name="update_n_plans">
+        <item quantity="one">Update %1$d plan</item>
+        <item quantity="other">Update %1$d plans</item>
+    </plurals>
+    <string name="save_as_new_plan">Save as new plan</string>
+    <string name="nothing_to_change">This message doesn\'t give a new date or time for "%1$s".</string>
+    <string name="edit_this_plan">Edit the plan instead</string>
+    <string name="reason_same_type">same type</string>
+    <string name="reason_same_day">same day</string>
+    <string name="reason_same_words">same words</string>
+    <string name="reason_same_people">same people</string>
+    <string name="reason_coming_up">coming up soon</string>
+    <string name="paste_a_message">Paste a message</string>
+    <string name="paste_a_message_desc">Kokhon finds the date, time and what it is</string>
+    <string name="type_it_yourself">Type it yourself</string>
+    <string name="type_it_yourself_desc">Fill in the details</string>
+    <string name="copied_message">You copied a message. Make it a plan?</string>
+    <string name="make_it_a_plan">Make it a plan</string>
+    <string name="not_now">Not now</string>
+    <string name="update_from_message">Update from a message or screenshot</string>
+    <string name="history">History</string>
+    <string name="history_from_message">From: “%1$s”</string>
 </resources>

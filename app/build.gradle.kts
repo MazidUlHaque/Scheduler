@@ -47,6 +47,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:data"))
     implementation(project(":core:alarm"))
+    implementation(project(":core:parser"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

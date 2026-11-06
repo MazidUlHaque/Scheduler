@@ -26,6 +26,9 @@ class DetailViewModel(
                 id,
             ).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    val history =
+        repository.observeHistory(id).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
     private fun update(change: (Entry) -> Entry) {
         val current = entry.value ?: return
         viewModelScope.launch { coordinator.save(change(current)) }

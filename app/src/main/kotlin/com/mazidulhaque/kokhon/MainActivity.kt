@@ -13,13 +13,16 @@ class MainActivity : ComponentActivity() {
     /** An entry to open, set when the app is launched from a notification. */
     private val entryToOpen = MutableStateFlow<Long?>(null)
 
+    /** Text shared from another app, to be turned into a plan. */
+    private val sharedText = MutableStateFlow<String?>(null)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handle(intent)
         setContent {
             KokhonTheme {
-                KokhonNavHost(entryToOpen = entryToOpen)
+                KokhonNavHost(entryToOpen = entryToOpen, sharedText = sharedText)
             }
         }
     }
@@ -30,8 +33,16 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun handle(intent: Intent?) {
-        if (intent?.action == ACTION_OPEN_ENTRY) {
-            entryToOpen.value = intent.getLongExtra(EXTRA_ENTRY_ID, 0).takeIf { it != 0L }
+        when (intent?.action) {
+            ACTION_OPEN_ENTRY -> {
+                entryToOpen.value = intent.getLongExtra(EXTRA_ENTRY_ID, 0).takeIf { it != 0L }
+            }
+
+            Intent.ACTION_SEND -> {
+                val subject = intent.getStringExtra(Intent.EXTRA_SUBJECT)
+                val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+                sharedText.value = listOfNotNull(subject, text).joinToString("\n").takeIf { it.isNotBlank() }
+            }
         }
     }
 

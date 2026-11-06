@@ -39,4 +39,17 @@
     <string name="importance_normal">Normal</string>
     <string name="importance_important">Important</string>
     <string name="importance_critical">Critical</string>
+
+    <string name="history_created">Created</string>
+    <string name="history_created_from_message">Created from a message</string>
+    <string name="history_moved">Moved from %1$s to %2$s</string>
+    <string name="history_renamed">Renamed to "%1$s"</string>
+    <string name="history_importance">Importance set to %1$s</string>
+    <string name="history_reminders_on">Reminders turned on</string>
+    <string name="history_reminders_off">Reminders turned off</string>
+    <string name="history_reminders_changed">Reminders changed</string>
+    <string name="history_completed">Marked as done</string>
+    <string name="history_cancelled">Cancelled</string>
+    <string name="history_reopened">Made active again</string>
+    <string name="history_details">Details edited</string>
 </resources>

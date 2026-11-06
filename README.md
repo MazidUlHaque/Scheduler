@@ -32,9 +32,9 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 
 ## Screenshots
 
-| Home timeline | Alarm |
-|---|---|
-| <img src="docs/screenshots/home.png" width="280" alt="Home timeline with the Now line, a completed plan above it and upcoming plans below"> | <img src="docs/screenshots/alarm.png" width="280" alt="Alarm screen with a large red Stop button and a separate Snooze button"> |
+| From a message | Updating a plan | Home timeline | Alarm |
+|---|---|---|---|
+| <img src="docs/screenshots/capture.png" width="200" alt="A pasted message with the understood words highlighted and the plan below it"> | <img src="docs/screenshots/update.png" width="200" alt="A change message asking: Move Team meeting to 10:00 PM?"> | <img src="docs/screenshots/home.png" width="200" alt="Home timeline with the Now line, a completed plan above it and upcoming plans below"> | <img src="docs/screenshots/alarm.png" width="200" alt="Alarm screen with a large red Stop button and a separate Snooze button"> |
 
 Screenshots are rendered from the real UI by the test suite (`./gradlew :app:testDebugUnitTest`, output in `app/build/screenshots/`).
 
@@ -56,7 +56,8 @@ Every push and pull request runs the same checks on GitHub Actions, and the debu
 ```
 app/                  Application, activity, screens
 core/model/           Pure Kotlin domain: entries, importance, reminder chains, reminder planning
-core/data/            Room database and settings (DataStore)
+core/parser/          Pure Kotlin message parser and update matcher (English + Banglish), heavily tested
+core/data/            Room database (plans and their history) and settings (DataStore)
 core/alarm/           Exact alarms, notifications, the ringing service and the alarm screen
 core/designsystem/    Colours, typography, theme, icons and shared components
 docs/                 Requirements, plan and design decisions
@@ -73,7 +74,7 @@ docs/                 Requirements, plan and design decisions
 - [x] Requirement analysis & plan
 - [x] Phase 0: Project foundation, design system & CI
 - [x] Phase 1: Manual scheduling + reliable reminders & alarms
-- [ ] Phase 2: Text capture (paste / share) with smart parsing
+- [x] Phase 2: Text capture (paste / share) with smart parsing
 - [ ] Phase 3: Screenshot capture (on-device OCR)
 - [ ] Phase 4: Smart reminders, widgets, UX polish
 - [ ] Phase 5: Release on Google Play

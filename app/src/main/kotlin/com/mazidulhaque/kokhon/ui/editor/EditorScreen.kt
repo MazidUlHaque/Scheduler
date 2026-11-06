@@ -74,13 +74,16 @@ import java.time.ZoneOffset
 @Composable
 fun EditorScreen(
     id: Long,
+    fromCapture: Boolean = false,
     onBack: () -> Unit,
     onSaved: (Long) -> Unit,
 ) {
     val app = kokhonApp()
     val context = LocalContext.current
     val vm: EditorViewModel =
-        viewModel(key = "editor-$id") { EditorViewModel(id, app.entryRepository, app.reminderCoordinator, app.clock) }
+        viewModel(key = "editor-$id-$fromCapture") {
+            EditorViewModel(id, if (fromCapture) app.captureDraft.value else null, app.entryRepository, app.reminderCoordinator, app.clock)
+        }
     val state by vm.state.collectAsStateWithLifecycle()
     var pickingDate by remember { mutableStateOf(false) }
     var pickingTime by remember { mutableStateOf(false) }

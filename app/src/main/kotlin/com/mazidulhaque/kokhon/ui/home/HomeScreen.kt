@@ -37,7 +37,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -74,7 +76,11 @@ fun HomeScreen(
     onOpenEntry: (Long) -> Unit,
     onAddPlan: () -> Unit,
     onOpenSettings: () -> Unit,
+    onCapture: (String) -> Unit = {},
 ) {
+    val context = LocalContext.current
+    var choosing by remember { mutableStateOf(false) }
+    val clipboard = rememberClipboardOffer()
     val app = kokhonApp()
     val vm: HomeViewModel =
         viewModel {
@@ -143,14 +149,34 @@ fun HomeScreen(
                         item { EmptyState() }
                     }
                 }
+                if (clipboard.available) {
+                    ClipboardBanner(
+                        onUse = { onCapture(clipboard.read(context)) },
+                        onDismiss = clipboard::dismiss,
+                    )
+                }
             }
             BottomBar(
                 discreetOn = state?.discreetUntil != null,
                 onToggleDiscreet = { vm.toggleDiscreet(currentlyOn = state?.discreetUntil != null) },
-                onAddPlan = onAddPlan,
+                onAddPlan = { choosing = true },
                 onOpenSettings = onOpenSettings,
             )
         }
+    }
+
+    if (choosing) {
+        AddPlanSheet(
+            onDismiss = { choosing = false },
+            onPaste = {
+                choosing = false
+                onCapture(clipboard.read(context))
+            },
+            onType = {
+                choosing = false
+                onAddPlan()
+            },
+        )
     }
 }
 

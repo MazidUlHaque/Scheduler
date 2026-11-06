@@ -10,8 +10,11 @@ import com.mazidulhaque.kokhon.core.alarm.ReminderNotifier
 import com.mazidulhaque.kokhon.core.data.repository.createEntryRepository
 import com.mazidulhaque.kokhon.core.data.settings.SettingsRepository
 import com.mazidulhaque.kokhon.core.model.Entry
+import com.mazidulhaque.kokhon.core.parser.ParserConfig
+import com.mazidulhaque.kokhon.core.parser.PlanParser
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.time.Clock
+import java.time.DayOfWeek
 
 /**
  * Application entry point and the app's object graph. Dependencies are wired by hand:
@@ -26,6 +29,15 @@ class KokhonApplication :
     override val settingsRepository by lazy { SettingsRepository(this) }
     override val alarmScheduler by lazy { AlarmScheduler(this, clock) }
     override val reminderCoordinator by lazy { ReminderCoordinator(this, entryRepository, alarmScheduler, clock) }
+
+    /** Bangladesh (and a few others) have a Friday weekend, which changes what "this weekend" means. */
+    val planParser by lazy {
+        val fridayWeekend = setOf("Asia/Dhaka", "Asia/Riyadh", "Asia/Kuwait", "Asia/Qatar", "Asia/Bahrain", "Asia/Muscat")
+        PlanParser(ParserConfig(weekendStart = if (clock.zone.id in fridayWeekend) DayOfWeek.FRIDAY else DayOfWeek.SATURDAY))
+    }
+
+    /** A plan found in a message that the user wants to finish in the full editor. */
+    val captureDraft = MutableStateFlow<Entry?>(null)
 
     /** The most recently deleted entry, offered for Undo on the home screen. */
     val pendingUndo = MutableStateFlow<Entry?>(null)

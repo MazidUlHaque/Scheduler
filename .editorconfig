@@ -19,3 +19,8 @@ indent_size = 2
 
 [*.md]
 trim_trailing_whitespace = false
+
+# The parser is mostly regular expressions, which read better unwrapped.
+[core/parser/src/main/**/*.kt]
+ktlint_standard_max-line-length = disabled
+max_line_length = off
