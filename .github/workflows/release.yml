@@ -1,10 +1,15 @@
 name: Release
 
-# Builds a signed release when a version tag is pushed, e.g. `git tag v1.0.0 && git push origin v1.0.0`.
+# Builds a signed release, either when a version tag is pushed (`git push origin v1.0.0`)
+# or from the Actions tab: Release > Run workflow > type the version, e.g. v1.0.0.
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. v1.0.0"
+        required: true
 
 permissions:
   contents: write
@@ -16,6 +21,17 @@ jobs:
     timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
+
+      - name: Work out the version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          VERSION="${INPUT_VERSION:-$GITHUB_REF_NAME}"
+          if ! [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "::error::The version must look like v1.0.0 (got '$VERSION')."
+            exit 1
+          fi
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
 
       - uses: actions/setup-java@v6
         with:
@@ -51,12 +67,16 @@ jobs:
       - name: Name the files
         run: |
           mkdir -p dist
-          cp app/build/outputs/bundle/release/app-release.aab "dist/kokhon-${GITHUB_REF_NAME}.aab"
-          cp app/build/outputs/apk/release/app-release.apk "dist/kokhon-${GITHUB_REF_NAME}.apk"
+          cp app/build/outputs/bundle/release/app-release.aab "dist/kokhon-${VERSION}.aab"
+          cp app/build/outputs/apk/release/app-release.apk "dist/kokhon-${VERSION}.apk"
 
       - name: Publish the GitHub release
         uses: softprops/action-gh-release@v2
         with:
+          # Creates the tag on this commit when the release was started from the Actions tab.
+          tag_name: ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
+          name: Kokhon ${{ env.VERSION }}
           files: dist/*
           generate_release_notes: true
 

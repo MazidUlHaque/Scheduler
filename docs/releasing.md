@@ -56,7 +56,9 @@ Then delete `kokhon-release.txt`.
 
 1. Update `versionCode` (+1 every release) and `versionName` in `app/build.gradle.kts`, and move the
    *Unreleased* notes in `CHANGELOG.md` under the new version.
-2. Tag and push:
+2. Start the release, either way works:
+   - **From the browser:** repository → **Actions** → **Release** → **Run workflow** → type the version (e.g. `v1.0.0`) → **Run workflow**.
+   - **From a terminal:** tag and push:
 
    ```bash
    git tag v1.0.0
