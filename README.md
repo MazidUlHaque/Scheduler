@@ -22,7 +22,9 @@ Paste it, share it, or screenshot it. Scheduler works out the *what*, *when* and
 | 📋 | **Paste & share capture** | Share *"let's sit for a meeting tomorrow around 9:30 pm"* from WhatsApp or any app. You get a Meeting tomorrow at 21:30. |
 | 📸 | **Screenshot capture** | On-device OCR reads chat screenshots and turns them into entries |
 | 🔍 | **Shows what it understood** | Highlighted chips show exactly what was detected. Tap any chip to fix it. |
-| ⏰ | **Escalating alarms** | Notification → heads-up → full-screen alarm, so important things don't slip by |
+| 🎚️ | **Importance levels & reminder chains** | The app suggests how important a plan is and a matching chain (e.g. 30 → 15 → 5 min). Accept it in one tap or change anything. |
+| ⏰ | **Calm, clear alarms** | Big Stop and Snooze buttons, a ring limit, "I'm aware — no more reminders", and a discreet vibrate-only mode |
+| ✏️ | **Full control & updates** | Edit, rename, reschedule or delete anything. Share a changed message and the app updates the existing entry. |
 | 🍽️ | **Reminders per event type** | Dinner dates get a "get ready" and a "leave now" reminder; tours get a packing checklist |
 | 🩺 | **Reliability Doctor** | Detects battery-optimisation and permission problems that silently kill reminders |
 | 🔒 | **Private by design** | OCR and parsing run on your phone. No account and no cloud needed. |

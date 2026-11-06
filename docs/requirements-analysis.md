@@ -1,6 +1,8 @@
 # Requirement Analysis — Scheduler (working name)
 
-> Status: Draft v1 · Author: Mazidul Haque · Last updated: 2026-11-06
+> Status: Draft v2 · Author: Mazidul Haque · Last updated: 2026-11-06
+>
+> v2: added importance levels and reminder chains, the alarm-screen and discreet-mode requirements, updating entries from new text, and full edit control. Removed the "share confirmation back" feature.
 
 ## 1. Problem statement
 
@@ -57,20 +59,23 @@ natural-language input.
 | **Delivery on aggressive OEMs** | On Xiaomi, Oppo, Vivo and some Samsung builds, battery optimisation silently kills reminders. Apps rarely detect this or guide you to fix it. |
 | **Privacy** | Natural-language and OCR features in most apps depend on the cloud. |
 | **Local language** | No support for Bangla or Banglish ("kal raat 9.30 e meeting"). |
-| **Closing the loop** | Nothing produces a confirmation you can send back to the group ("Meeting confirmed: Sat 7 Nov, 9:30 PM ✅"). |
+| **Plans change** | When a plan changes ("let's move it to 10 pm"), you have to find the old event and edit it by hand. Sharing the new message just creates a duplicate. |
+| **Confusing alarm screens** | Snooze and Stop look alike or need a swipe gesture. People panic, press the wrong one, and the alarm keeps ringing in front of everyone. Ring length, repeat count and how to stop it are rarely configurable. |
+| **One importance for everything** | A tea break and a flight get the same reminder. You can't say "this one matters" and get a stronger reminder chain in one tap. |
 
 ## 4. Unique value proposition
 
 1. **Capture from anywhere:** paste, share sheet, screenshot, clipboard suggestion chip, Quick Settings tile, and later voice.
 2. **Show what was understood:** the source text is shown with highlighted chips (`tomorrow → Sat, 7 Nov`, `9:30 pm → 21:30`, `meeting → Meeting`). Tapping a chip fixes that one piece.
 3. **Handle ambiguity explicitly:** confidence scoring, a one-tap choice when the app is unsure ("9:30 AM or PM?"), and an *approximate* flag for words like "around" or "maybe".
-4. **Reminder profiles per event type:** each type comes with its own reminder plan, such as get-ready, leave-by, packing checklist or deadline nudges.
-5. **Escalating alarms:** a gentle notification, then a heads-up, then a full-screen alarm, with smart snooze options like "until 10 min before" or "when I'm free".
-6. **Reliability Doctor:** checks exact-alarm permission, notification channels, battery optimisation and OEM autostart, then walks you through fixing each one.
-7. **Private and offline-first:** OCR and parsing run on the device. No account is needed.
-8. **Share back:** one tap produces a confirmation message for the group and an `.ics` invite.
-9. **Bangla and Banglish parsing** (phase 2).
-10. **Duplicate and conflict detection** when the same plan arrives twice, or when two plans overlap.
+4. **Importance level → reminder chain:** the app suggests an importance level (Low / Normal / Important / Critical) from the text and event type, and each level comes with a matching reminder chain. You accept with one tap or change anything. Example of an Important chain: 30 min (notification) → 15 min (notification) → 5 min (alarm).
+5. **Calm, unmistakable alarm screen:** Stop and Snooze are big, different-coloured, clearly labelled buttons. Ringing has a time limit. A Discreet mode (vibrate only) avoids awkward moments, and an "I'm aware — no more reminders" button silences the rest of the chain.
+6. **Update from a new message:** share the changed message ("let's do 10 pm instead") and the app finds the existing event and shows what will change, instead of creating a duplicate.
+7. **Full control:** edit, rename, reschedule, change type or importance, turn reminders off, duplicate or delete any entry, with undo.
+8. **Reliability Doctor:** checks exact-alarm permission, notification channels, battery optimisation and OEM autostart, then walks you through fixing each one.
+9. **Private and offline-first:** OCR and parsing run on the device. No account is needed.
+10. **Bangla and Banglish parsing.**
+11. **Duplicate and conflict detection** when the same plan arrives twice, or when two plans overlap.
 
 ## 5. Functional requirements
 
@@ -80,6 +85,9 @@ natural-language input.
 - FR-1.3 Recurrence (RRULE subset) and exceptions.
 - FR-1.4 Task-specific fields: due time, done/undone, priority.
 - FR-1.5 Keep the original captured text or image as the entry's source, so it's always traceable.
+- FR-1.6 **Full control** over every entry: edit any field, rename, reschedule (including quick "+1 hour" / "tomorrow same time"), change type and importance, duplicate, cancel, delete. Destructive actions offer Undo.
+- FR-1.7 Recurring entries: edit or delete "this one only" or "this and all following".
+- FR-1.8 Edit history per entry (what changed, and whether it came from a new message or a manual edit).
 
 ### FR-2 Smart capture & parsing
 - FR-2.1 Text input: paste, share (`ACTION_SEND text/plain`), quick-add bar.
@@ -91,6 +99,8 @@ natural-language input.
 - FR-2.7 One message containing several plans → several draft entries.
 - FR-2.8 Every parse goes through a preview screen. Nothing is saved silently.
 - FR-2.9 Parsing works offline.
+- FR-2.10 **Update from new text.** When captured text looks like it refers to an existing entry (same type, people or title within a nearby time window, or words like "move", "shift", "instead", "postpone", "cancel"), the preview offers **Update existing** with a before/after view of each change, or **Create new**. You always choose; nothing is overwritten silently.
+- FR-2.11 Suggest an importance level from the text ("important", "urgent", "must", "don't forget") and the event type (a flight or exam is Critical by default). You can always change it.
 
 ### FR-3 Image / screenshot capture
 - FR-3.1 Inputs: share an image (`ACTION_SEND image/*`), pick from gallery (Photo Picker, so no storage permission is needed), take a camera photo.
@@ -100,13 +110,57 @@ natural-language input.
 - FR-3.5 Optional and off by default: auto-detect new screenshots and offer "Create from screenshot?"
 
 ### FR-4 Reminders, notifications, alarms
-- FR-4.1 Several reminders per entry; defaults come from the type's profile.
-- FR-4.2 Exact delivery via `AlarmManager.setExactAndAllowWhileIdle` or `setAlarmClock`; reschedule after reboot, time change and app update.
-- FR-4.3 Three levels: Notification, Heads-up, and Alarm (full-screen intent with sound and vibration).
-- FR-4.4 Notification actions: Done, Snooze (5/10/30 min or a custom time), Open, Share confirmation.
-- FR-4.5 Escalation if a reminder is ignored (configurable).
-- FR-4.6 A morning agenda digest and an evening "tomorrow" digest (optional).
-- FR-4.7 Separate notification channels per level, so system settings stay meaningful.
+
+#### FR-4.1 Importance levels and reminder chains
+- Every entry has an **importance level**: Low, Normal (the general default for all events), Important, or Critical.
+- Each level maps to a **reminder chain**: an ordered list of steps. Each step has an *offset* (e.g. 30 min before) and a *style*:
+  - **Silent:** only shown in the list/widget
+  - **Notification:** normal sound
+  - **Heads-up:** pops up on screen
+  - **Alarm:** full-screen and rings
+- Default chains (all editable in Settings):
+
+  | Level | Default chain |
+  |-------|---------------|
+  | Low | 10 min · notification |
+  | Normal | 15 min · notification |
+  | Important | 30 min · notification → 15 min · notification → 5 min · alarm |
+  | Critical | 1 day · notification → 1 h · heads-up → 30 min · alarm → 5 min · alarm |
+
+- The app **suggests** a level (from text and type). In the editor and the parse preview, you see the suggested chain and can:
+  1. accept it with one tap,
+  2. pick another level or a saved chain, or
+  3. customise the steps for this entry only: add, remove or reorder steps, change offsets and styles.
+- Custom chains can be **saved as named presets** (e.g. "Exam", "Flight", "Gentle") and reused.
+- Users can set which level each event type defaults to (e.g. Match → Important).
+
+#### FR-4.2 Alarm screen: clear and calm
+- **Stop** and **Snooze** are two large, clearly labelled buttons with different colours and icons. No swipe gestures, no ambiguity.
+  - **Stop** = "stop this reminder" (the rest of the chain still fires).
+  - **Snooze** shows its length in the label ("Snooze 5 min").
+- A third, clearly separated action: **"I'm aware — turn off remaining reminders"** for this entry.
+- The screen shows the title, time, and *what happens next* ("Next reminder: 5 min before — alarm").
+- Pressing a **volume or power button** silences the sound immediately without dismissing, so you can step away calmly before choosing Stop or Snooze. Configurable.
+- **Ring limit:** an alarm rings for at most *N* seconds (default 60, configurable), then becomes a silent notification. It never rings forever.
+- **Auto-snooze limit:** maximum number of snoozes (configurable, default 3), then it stops.
+- **Gentle start:** volume ramps up over a few seconds (configurable), with a choice of vibration only, sound only, or both.
+
+#### FR-4.3 Avoiding awkward moments
+- **Discreet mode:** one toggle (also available as a Quick Settings tile) that turns all alarms into vibrate-only notifications, for a meeting, mosque, cinema and similar. It can be set to end automatically (e.g. after 1 h).
+- **Respect Do Not Disturb** by default; only Critical entries may bypass it, and only if the user allows it.
+- **Sound follows ringer mode:** if the phone is on silent or vibrate, alarms vibrate instead of ringing, unless the entry is Critical and the user has opted in.
+
+#### FR-4.4 Turning reminders off
+- Per entry: turn **all reminders off** (the entry stays in the schedule), or turn off a single step.
+- From the notification: **Done**, **Snooze**, **Turn off reminders** actions. No need to open the app.
+- Marking an entry **Done** or **Cancelled** cancels all of its pending reminders.
+- Turned-off reminders can be turned back on.
+
+#### FR-4.5 Delivery
+- Exact delivery via `AlarmManager.setExactAndAllowWhileIdle` or `setAlarmClock`; reschedule after reboot, time change and app update.
+- Changing an entry's time automatically moves its whole reminder chain.
+- Separate notification channels per style, so system settings stay meaningful.
+- Optional morning agenda digest and evening "tomorrow" digest.
 
 ### FR-5 Views
 - FR-5.1 A timeline home screen grouped as Now, Today, Tomorrow, This week, Later.
@@ -118,8 +172,7 @@ natural-language input.
 - FR-6.1 Reliability Doctor.
 - FR-6.2 Export and import (JSON backup, `.ics`).
 - FR-6.3 Optional sync with the device calendar through CalendarProvider (Google or Samsung accounts).
-- FR-6.4 Share confirmation text.
-- FR-6.5 Detect conflicts and duplicates.
+- FR-6.4 Detect conflicts and duplicates.
 
 ## 6. Non-functional requirements
 
@@ -144,6 +197,8 @@ natural-language input.
 5. **Glanceable home screen.** The next item is always the hero card, with a live countdown.
 6. **Gestures.** Swipe right to complete, swipe left to snooze or reschedule, long-press for quick actions.
 7. **Personality without clutter.** A distinct colour and icon per type, gentle motion, and friendly empty states.
+8. **The user is always in control.** Every suggestion (date, type, importance, reminder chain) can be accepted in one tap or changed. Nothing important happens without the user seeing it.
+9. **Alarms never cause panic.** Clear words over icons, one obvious way to stop, a limit on ringing, and a discreet mode.
 
 ## 8. Platform constraints & risks
 

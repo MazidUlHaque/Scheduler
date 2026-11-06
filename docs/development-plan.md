@@ -81,20 +81,25 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - CI: build, unit tests, lint, detekt, ktlint
 - **Exit:** the app launches and shows a themed empty state; CI passes
 
-### Phase 1 — MVP: manual scheduling + reliable reminders
-- Domain model and Room schema (with migrations)
-- Timeline home screen, editor screen, swipe actions, undo
-- AlarmScheduler with exact alarms, boot and time-change rescheduling
-- Notification channels, actions (Done/Snooze/Open), full-screen alarm screen
+### Phase 1 — MVP: manual scheduling + reliable, controllable reminders
+- Domain model and Room schema (with migrations): Entry, ImportanceLevel, ReminderChain, ReminderStep, ChainPreset
+- Timeline home screen; editor with full control (edit, rename, reschedule, change type/importance, duplicate, cancel, delete, undo)
+- Importance levels with default reminder chains; per-entry chain editor; saved presets
+- AlarmScheduler with exact alarms, boot and time-change rescheduling; moving an entry moves its chain
+- Notification channels and actions (Done / Snooze / Turn off reminders)
+- **Alarm screen:** big, clearly labelled Stop and Snooze buttons; "I'm aware — turn off remaining reminders"; volume button silences; ring limit; snooze limit; volume ramp
+- Discreet mode toggle; respect for Do Not Disturb and ringer mode
 - Permissions requested at the moment they're needed
-- **Exit:** a manually created event fires its reminder and alarm on time, including after a reboot
+- **Exit:** an Important entry fires 30 → 15 → 5 min reminders on time (also after a reboot); the alarm can be stopped by anyone on the first try; turning reminders off for an entry silences its whole chain
 
 ### Phase 2 — Text capture (paste + share)
 - `core:parser` with 300+ test phrases (including your own examples)
 - Share target for text, paste from the clipboard, quick-add bar
 - Parse preview screen with highlighted chips and an ambiguity picker
 - Several plans in one message; approximate flag
-- **Exit:** "let's try to sit for a meeting tomorrow around 9:30 pm" → Meeting, tomorrow, 21:30, approximate. Three taps from WhatsApp.
+- Importance suggestion from text and type, shown with its reminder chain in the preview
+- **Update from new text:** match the message to an existing entry, show a before/after diff, choose Update existing or Create new
+- **Exit:** "let's try to sit for a meeting tomorrow around 9:30 pm" → Meeting, tomorrow, 21:30, approximate. Three taps from WhatsApp. Sharing "let's make it 10 pm instead" then offers to update that same meeting.
 
 ### Phase 3 — Screenshot capture
 - ML Kit OCR, chat cleanup, reference-date detection
@@ -103,8 +108,8 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - **Exit:** a WhatsApp or Messenger screenshot produces the same result as Phase 2
 
 ### Phase 4 — Smart reminders & UX polish
-- Reminder profiles per event type (get-ready, leave-by, packing checklist)
-- Escalation ladder, smart snooze
+- Extra reminder profiles per event type (get-ready, leave-by, packing checklist)
+- Smart snooze ("until 10 min before")
 - Reliability Doctor
 - Morning and evening digests
 - Glance widgets, Quick Settings tile
@@ -112,7 +117,7 @@ Each phase is delivered as its own pull request (or a few small ones) into `main
 - **Exit:** a feature-complete v1.0 beta
 
 ### Phase 5 — Release
-- Share confirmation, `.ics` export/import, JSON backup
+- `.ics` export/import, JSON backup
 - Optional sync with the device calendar
 - Bangla/Banglish parsing
 - Play Store listing, privacy policy, signed release workflow
