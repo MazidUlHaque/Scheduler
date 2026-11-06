@@ -79,6 +79,15 @@ fun KokhonNavHost(
             sharedImage.value = null
         }
     }
+    val app =
+        com.mazidulhaque.kokhon.ui.common
+            .kokhonApp()
+
+    /** Back to the timeline, with the plans just saved highlighted there. */
+    fun goHomeShowing(ids: List<Long>) {
+        app.justSaved.value = ids.toSet()
+        nav.popBackStack(HomeRoute, inclusive = false)
+    }
     NavHost(navController = nav, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(
@@ -111,13 +120,10 @@ fun KokhonNavHost(
                 id = id,
                 fromCapture = route.fromCapture,
                 onBack = { nav.popBackStack() },
-                onSaved = { savedId ->
-                    if (id == 0L) {
-                        nav.navigate(DetailRoute(savedId)) { popUpTo<EditorRoute> { inclusive = true } }
-                    } else {
-                        nav.popBackStack()
-                    }
-                },
+                onSaved = { nav.popBackStack() },
+                onSavedDone = { ids -> goHomeShowing(ids) },
+                onEditSaved = { savedId -> nav.navigate(EditorRoute(savedId)) { popUpTo<EditorRoute> { inclusive = true } } },
+                onEditReminders = { savedId -> nav.navigate(RemindersRoute(savedId)) { popUpTo<EditorRoute> { inclusive = true } } },
             )
         }
         composable<RemindersRoute> { entry ->
@@ -139,6 +145,8 @@ fun KokhonNavHost(
                 onGoHome = { nav.popBackStack(HomeRoute, inclusive = false) },
                 onEditDraft = { nav.navigate(EditorRoute(fromCapture = true)) { popUpTo<CaptureRoute> { inclusive = true } } },
                 onEditEntry = { id -> nav.navigate(EditorRoute(id)) { popUpTo<CaptureRoute> { inclusive = true } } },
+                onEditReminders = { id -> nav.navigate(RemindersRoute(id)) { popUpTo<CaptureRoute> { inclusive = true } } },
+                onSavedDone = { ids -> goHomeShowing(ids) },
             )
         }
         composable<CalendarRoute> {

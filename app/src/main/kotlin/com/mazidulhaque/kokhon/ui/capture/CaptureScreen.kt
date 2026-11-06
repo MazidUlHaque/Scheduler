@@ -83,6 +83,7 @@ import com.mazidulhaque.kokhon.ui.common.ClashWarning
 import com.mazidulhaque.kokhon.ui.common.DuplicateWarning
 import com.mazidulhaque.kokhon.ui.common.ImportanceSelector
 import com.mazidulhaque.kokhon.ui.common.ReminderChainEditor
+import com.mazidulhaque.kokhon.ui.common.SavedSummarySheet
 import com.mazidulhaque.kokhon.ui.common.isCustomFor
 import com.mazidulhaque.kokhon.ui.common.kokhonApp
 import com.mazidulhaque.kokhon.ui.common.labelRes
@@ -108,6 +109,8 @@ fun CaptureScreen(
     onGoHome: () -> Unit,
     onEditDraft: () -> Unit,
     onEditEntry: (Long) -> Unit,
+    onEditReminders: (Long) -> Unit = {},
+    onSavedDone: (List<Long>) -> Unit = {},
 ) {
     val app = kokhonApp()
     val vm: CaptureViewModel =
@@ -126,8 +129,15 @@ fun CaptureScreen(
             )
         }
     val state by vm.state.collectAsStateWithLifecycle()
-    LaunchedEffect(state.finishedWith) {
-        state.finishedWith?.let { if (it == 0L) onGoHome() else onOpenEntry(it) }
+    state.saved?.let { saved ->
+        SavedSummarySheet(
+            entries = saved,
+            updated = state.savedWasUpdate,
+            now = app.clock.instant(),
+            onOk = { onSavedDone(saved.map { it.id }) },
+            onChangeDetails = { onEditEntry(it.id) },
+            onChangeReminders = { onEditReminders(it.id) },
+        )
     }
 
     Column(
@@ -173,8 +183,26 @@ private fun androidx.compose.foundation.layout.ColumnScope.InputContent(
         modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp, vertical = 12.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-        if (state.imageUnreadable) {
-            Text(stringResource(R.string.image_unreadable), style = MaterialTheme.typography.bodyMedium, color = KokhonColors.StopText)
+        state.imageError?.let { error ->
+            val message =
+                when (error.reason) {
+                    com.mazidulhaque.kokhon.core.ocr.ScreenshotReadException.Reason.CANNOT_OPEN -> R.string.image_cannot_open
+                    com.mazidulhaque.kokhon.core.ocr.ScreenshotReadException.Reason.RECOGNITION_FAILED -> R.string.image_recognition_failed
+                    com.mazidulhaque.kokhon.core.ocr.ScreenshotReadException.Reason.NO_TEXT -> R.string.image_unreadable
+                }
+            Text(stringResource(message), style = MaterialTheme.typography.bodyMedium, color = KokhonColors.StopText)
+            if (error.reason != com.mazidulhaque.kokhon.core.ocr.ScreenshotReadException.Reason.NO_TEXT) {
+                var copied by remember { mutableStateOf(false) }
+                KokhonSecondaryButton(
+                    text = stringResource(if (copied) R.string.details_copied else R.string.copy_details),
+                    onClick = {
+                        context.getSystemService<ClipboardManager>()?.setPrimaryClip(
+                            android.content.ClipData.newPlainText("Kokhon error", error.details),
+                        )
+                        copied = true
+                    },
+                )
+            }
         }
         OutlinedTextField(
             value = state.text,
@@ -316,7 +344,14 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
 ) {
     val context = LocalContext.current
     val draft = state.drafts[state.current]
-    val others by vm.others.collectAsStateWithLifecycle()
+    val allOthers by vm.others.collectAsStateWithLifecycle()
+    // Once saved, the plan itself must not show up as a duplicate or a clash behind the summary.
+    val savedIds =
+        state.saved
+            .orEmpty()
+            .map { it.id }
+            .toSet()
+    val others = allOthers.filter { it.id !in savedIds }
     val duplicate = vm.duplicate(draft, others)
     var pickingDate by remember { mutableStateOf(false) }
     var pickingTime by remember { mutableStateOf(false) }
@@ -367,6 +402,24 @@ private fun androidx.compose.foundation.layout.ColumnScope.CreateContent(
 
         duplicate?.let { DuplicateWarning(it) { onOpenEntry(it.id) } }
         ClashWarning(vm.clashes(draft, others).filter { it.id != duplicate?.id })
+
+        if (vm.isPast(draft)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    stringResource(R.string.past_warning),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = KokhonColors.StopText,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = { vm.setDate(draft.date.plusDays(1)) }) {
+                    Text(
+                        stringResource(R.string.move_to_tomorrow),
+                        textDecoration = TextDecoration.Underline,
+                        color = MaterialTheme.colorScheme.onSurface,
+                    )
+                }
+            }
+        }
 
         draft.amPmChoices?.let { choices ->
             Column(

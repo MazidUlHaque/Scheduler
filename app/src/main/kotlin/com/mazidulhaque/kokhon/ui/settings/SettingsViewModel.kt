@@ -55,11 +55,19 @@ class SettingsViewModel(
         }
     }
 
+    fun setAppearance(appearance: com.mazidulhaque.kokhon.core.data.settings.Appearance) {
+        viewModelScope.launch { repository.setAppearance(appearance) }
+    }
+
     fun deletePreset(name: String) {
         viewModelScope.launch { repository.deletePreset(name) }
     }
 
     enum class DiscreetChoice { OFF, ONE_HOUR, TWO_HOURS, UNTIL_MORNING }
+
+    fun setDiscreetUntil(until: Instant) {
+        viewModelScope.launch { repository.setDiscreetUntil(until) }
+    }
 
     fun setDiscreet(choice: DiscreetChoice) {
         val now = clock.instant()

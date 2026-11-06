@@ -63,6 +63,7 @@ import com.mazidulhaque.kokhon.ui.common.ClashWarning
 import com.mazidulhaque.kokhon.ui.common.ImportanceSelector
 import com.mazidulhaque.kokhon.ui.common.KokhonTopBar
 import com.mazidulhaque.kokhon.ui.common.ReminderChainEditor
+import com.mazidulhaque.kokhon.ui.common.SavedSummarySheet
 import com.mazidulhaque.kokhon.ui.common.isCustomFor
 import com.mazidulhaque.kokhon.ui.common.kokhonApp
 import com.mazidulhaque.kokhon.ui.common.labelRes
@@ -78,6 +79,9 @@ fun EditorScreen(
     fromCapture: Boolean = false,
     onBack: () -> Unit,
     onSaved: (Long) -> Unit,
+    onSavedDone: (List<Long>) -> Unit = {},
+    onEditSaved: (Long) -> Unit = {},
+    onEditReminders: (Long) -> Unit = {},
 ) {
     val app = kokhonApp()
     val context = LocalContext.current
@@ -91,7 +95,19 @@ fun EditorScreen(
     var pickingTime by remember { mutableStateOf(false) }
     var editingReminders by remember { mutableStateOf(false) }
 
-    LaunchedEffect(state.savedId) { state.savedId?.let(onSaved) }
+    // A new plan gets a confirmation; an edit of an existing plan simply goes back.
+    LaunchedEffect(state.savedId) { if (!state.isNew) state.savedId?.let(onSaved) }
+    val newlySaved = state.savedEntry?.takeIf { state.isNew }
+    if (newlySaved != null) {
+        SavedSummarySheet(
+            entries = listOf(newlySaved),
+            updated = false,
+            now = app.clock.instant(),
+            onOk = { onSavedDone(listOf(newlySaved.id)) },
+            onChangeDetails = { onEditSaved(it.id) },
+            onChangeReminders = { onEditReminders(it.id) },
+        )
+    }
 
     // Ask for notification permission at the moment it matters: the first time a plan is saved.
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { vm.save() }

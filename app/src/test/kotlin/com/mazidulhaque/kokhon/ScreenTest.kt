@@ -160,6 +160,7 @@ class ScreenTest {
                     onGoHome = {},
                     onEditDraft = {},
                     onEditEntry = {},
+                    onSavedDone = { opened = it.single() },
                 )
             }
         }
@@ -174,6 +175,17 @@ class ScreenTest {
         compose.onNodeWithText("I found a plan in this message").assertIsDisplayed()
         save("capture")
         compose.onNodeWithText("Save plan").performClick()
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Saved!"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        compose.onNodeWithText("Change reminders").assertIsDisplayed()
+        save("saved")
+        compose.onNodeWithText("OK").performClick()
         awaitCondition { opened != null }
         val saved = runBlocking { app.entryRepository.get(opened!!) }!!
         val zone = ZoneId.systemDefault()
@@ -229,6 +241,7 @@ class ScreenTest {
                     onGoHome = {},
                     onEditDraft = {},
                     onEditEntry = {},
+                    onSavedDone = { opened = it.single() },
                 )
             }
         }
@@ -243,6 +256,15 @@ class ScreenTest {
         compose.onNodeWithText("Move Team meeting to 10:00 PM?").assertIsDisplayed()
         save("update")
         compose.onNodeWithText("Yes, move it").performClick()
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Updated!"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        compose.onNodeWithText("OK").performClick()
         awaitCondition { opened != null }
         assertEquals(meeting.id, opened)
         val moved = runBlocking { app.entryRepository.get(meeting.id) }!!
@@ -372,5 +394,36 @@ class ScreenTest {
                 .isNotEmpty()
         }
         save("home-empty")
+    }
+
+    @Test
+    fun settingsAreReadableInDarkMode() {
+        compose.setContent {
+            KokhonTheme(darkTheme = true) {
+                androidx.compose.material3.Surface(color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
+                    com.mazidulhaque.kokhon.ui.settings
+                        .SettingsScreen(onBack = {})
+                }
+            }
+        }
+        awaitCondition {
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Appearance"),
+                ).fetchSemanticsNodes()
+                .isNotEmpty()
+        }
+        // Discreet mode, ring limit, snooze length and number of snoozes each offer a custom value.
+        assertEquals(
+            4,
+            compose
+                .onAllNodes(
+                    androidx.compose.ui.test
+                        .hasText("Custom…"),
+                ).fetchSemanticsNodes()
+                .size,
+        )
+        save("settings-dark")
     }
 }

@@ -113,4 +113,70 @@ class ScreenshotTextTest {
                 .single()
         assertEquals("Coffee", coffee.title)
     }
+
+    /**
+     * A cropped WhatsApp screenshot reported by a user (no date header, times printed at the end of lines):
+     * Rahman asks for "a short meeting tomorrow at your preferred time?", the reply is "let's try around 10 pm".
+     */
+    private fun line(
+        top: Int,
+        left: Int,
+        vararg words: Pair<String, Int>,
+    ): OcrLine {
+        val text = words.joinToString(" ") { it.first }
+        val height = words.maxOf { it.second }
+        return OcrLine(text, left, top, left + 900, top + height, words.map { OcrWord(it.first, it.second) })
+    }
+
+    private fun msg(vararg text: String) = text.map { it to 42 }.toTypedArray()
+
+    private val rahmanChat =
+        listOf(
+            line(80, 165, "~" to 36, "A." to 36, "Rahman" to 36, "+880" to 30, "1700-000000" to 30),
+            line(140, 165, *msg("Assalamualaikum", "Sir,", "we", "have", "finalised")),
+            line(197, 165, *msg("our", "game's", "main", "flow.", "We", "also", "have", "some")),
+            line(254, 165, *msg("questions", "regarding", "the", "data", "we", "will", "be")),
+            line(311, 165, *msg("using.", "Will", "it", "be", "possible", "for", "you", "to", "join")),
+            line(368, 165, *msg("us", "for", "a", "short", "meeting", "tomorrow", "at", "your")),
+            line(425, 165, *msg("preferred", "time?"), "8:18" to 30, "PM" to 30),
+            line(550, 595, *msg("walaikumussalam"), "8:19" to 30, "PM" to 30, "✓✓" to 30),
+            line(655, 520, *msg("let's", "try", "around", "10", "pm"), "8:19" to 30, "PM" to 30, "✓✓" to 30),
+            line(780, 165, "~" to 36, "A." to 36, "Rahman" to 36, "+880" to 30, "1700-000000" to 30),
+            line(840, 165, *msg("Ok", "sir"), "8:19" to 30, "PM" to 30),
+            line(990, 170, "Message" to 42),
+        )
+
+    @Test
+    fun `message times at the end of a line are removed by their smaller size`() {
+        val text = ScreenshotText.clean(rahmanChat, 1238, captured).text
+        assertFalse(text.contains("8:18"), text)
+        assertFalse(text.contains("8:19"), text)
+        assertTrue(text.contains("let's try around 10 pm"), text)
+    }
+
+    @Test
+    fun `a time written in the message itself is kept`() {
+        val lines = listOf(line(400, 80, *msg("meet", "at", "10:30", "pm")))
+        assertEquals("meet at 10:30 pm", ScreenshotText.clean(lines, height, captured).text)
+    }
+
+    @Test
+    fun `the question and the reply make one meeting tomorrow at about 10 pm`() {
+        // Screenshot taken the same evening, after the last message.
+        val message = ScreenshotText.clean(rahmanChat, 1238, LocalDateTime.of(2026, 11, 6, 20, 30))
+        val draft = PlanParser().parse(message.text, message.reference.atZone(ZoneId.of("Asia/Dhaka"))).drafts.single()
+        assertEquals(EntryType.MEETING, draft.type)
+        assertEquals(LocalDate.of(2026, 11, 7), draft.date)
+        assertEquals(LocalTime.of(22, 0), draft.time)
+        assertTrue(draft.approximate)
+    }
+
+    @Test
+    fun `read the next morning, tomorrow still means the day after the chat`() {
+        // Screenshot taken at 7:09 AM: the 8:19 PM messages are from the evening before.
+        val message = ScreenshotText.clean(rahmanChat, 1238, LocalDateTime.of(2026, 11, 7, 7, 9))
+        assertEquals(LocalDateTime.of(2026, 11, 6, 20, 19), message.reference)
+        val draft = PlanParser().parse(message.text, message.reference.atZone(ZoneId.of("Asia/Dhaka"))).drafts.single()
+        assertEquals(LocalDate.of(2026, 11, 7), draft.date)
+    }
 }

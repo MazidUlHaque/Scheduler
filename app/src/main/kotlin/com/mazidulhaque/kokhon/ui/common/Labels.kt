@@ -105,3 +105,65 @@ fun com.mazidulhaque.kokhon.core.model.ReminderPurpose.labelRes(): Int =
         com.mazidulhaque.kokhon.core.model.ReminderPurpose.PREPARE -> R.string.purpose_prepare
         com.mazidulhaque.kokhon.core.model.ReminderPurpose.BUY_GIFT -> R.string.purpose_buy_gift
     }
+
+/** "Past" when the time went by, "Done" when the user ticked it off. */
+@StringRes
+fun com.mazidulhaque.kokhon.core.model.Entry.statusWordRes(now: java.time.Instant): Int =
+    when (statusAt(now)) {
+        com.mazidulhaque.kokhon.core.model.EntryStatus.UPCOMING -> {
+            R.string.status_upcoming
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.ONGOING -> {
+            R.string.status_ongoing
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.COMPLETED -> {
+            if (manualStatus == com.mazidulhaque.kokhon.core.model.EntryStatus.COMPLETED) R.string.status_done else R.string.status_past
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.CANCELLED -> {
+            R.string.status_cancelled
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.MISSED -> {
+            R.string.status_missed
+        }
+    }
+
+/** A full sentence: "Coming up, in 2 h 30 min", "Past: this was 3 h ago", "Done ✓, marked by you". */
+@Composable
+fun statusSentence(
+    entry: com.mazidulhaque.kokhon.core.model.Entry,
+    now: java.time.Instant,
+): String {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val distance =
+        com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
+            .duration(context, Duration.between(now, entry.start))
+    return when (entry.statusAt(now)) {
+        com.mazidulhaque.kokhon.core.model.EntryStatus.UPCOMING -> {
+            stringResource(R.string.status_line_upcoming, distance)
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.ONGOING -> {
+            stringResource(R.string.status_ongoing)
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.COMPLETED -> {
+            if (entry.manualStatus == com.mazidulhaque.kokhon.core.model.EntryStatus.COMPLETED) {
+                stringResource(R.string.status_line_done)
+            } else {
+                stringResource(R.string.status_line_past, distance)
+            }
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.CANCELLED -> {
+            stringResource(R.string.status_cancelled)
+        }
+
+        com.mazidulhaque.kokhon.core.model.EntryStatus.MISSED -> {
+            stringResource(R.string.status_line_missed)
+        }
+    }
+}

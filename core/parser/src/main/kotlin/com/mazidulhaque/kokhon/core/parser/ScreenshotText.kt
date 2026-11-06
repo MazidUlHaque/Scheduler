@@ -8,13 +8,20 @@ import java.time.Month
 import java.time.temporal.TemporalAdjusters
 import java.util.Locale
 
-/** One line of text found in an image, with its position in pixels. */
+/** One word of a line, with its height in pixels (chat apps print message times smaller than messages). */
+data class OcrWord(
+    val text: String,
+    val height: Int,
+)
+
+/** One line of text found in an image, with its position in pixels and, when known, its words. */
 data class OcrLine(
     val text: String,
     val left: Int,
     val top: Int,
     val right: Int,
     val bottom: Int,
+    val words: List<OcrWord> = emptyList(),
 ) {
     val height: Int get() = (bottom - top).coerceAtLeast(1)
 }
@@ -86,7 +93,9 @@ object ScreenshotText {
                 lastStamp = null
                 continue
             }
-            kept += line.copy(text = text.replace(trailingStamp, "").trim())
+            val (withoutStamp, stampAtEnd) = stripSmallTrailingTime(line, typicalHeight)
+            stampAtEnd?.let { lastStamp = it }
+            kept += line.copy(text = withoutStamp.replace(trailingStamp, "").trim())
         }
 
         // Join wrapped lines of one bubble; separate bubbles with a new line.
@@ -110,10 +119,40 @@ object ScreenshotText {
         val reference =
             when {
                 date != null -> date.atTime(stampTime ?: if (date == captured.toLocalDate()) captured.toLocalTime() else LocalTime.NOON)
+
                 stampTime != null && !stampTime.isAfter(captured.toLocalTime()) -> captured.toLocalDate().atTime(stampTime)
+
+                // A message time later in the day than the screenshot means the message was sent the day before.
+                stampTime != null -> captured.toLocalDate().minusDays(1).atTime(stampTime)
+
                 else -> captured
             }
         return ScreenshotMessage(text.trim(), reference, referenceFromScreenshot = date != null)
+    }
+
+    /**
+     * WhatsApp and others print the message time at the end of the last line, in smaller text:
+     * "preferred time? 8:18 PM". Words that form such a time and are clearly smaller than the rest are removed.
+     * A time written in the message itself ("meet at 10:30 pm") is the same size as the text around it and stays.
+     */
+    private fun stripSmallTrailingTime(
+        line: OcrLine,
+        typicalHeight: Int,
+    ): Pair<String, LocalTime?> {
+        val words = line.words
+        if (words.size < 2) return line.text.trim() to null
+        for (take in 3 downTo 1) {
+            if (words.size <= take) continue
+            val tail = words.takeLast(take)
+            val tailText = tail.joinToString(" ") { it.text }
+            val match = timestamp.matchEntire(tailText) ?: continue
+            val bodyHeight = words.dropLast(take).maxOf { it.height }
+            val reference = maxOf(bodyHeight, (typicalHeight * 0.9).toInt())
+            if (tail.all { it.height < reference * 0.85 }) {
+                return words.dropLast(take).joinToString(" ") { it.text } to stampTime(match)
+            }
+        }
+        return line.text.trim() to null
     }
 
     private fun stampTime(m: MatchResult): LocalTime? {

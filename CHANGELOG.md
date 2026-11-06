@@ -7,6 +7,23 @@ and this project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.ht
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-11-06
+
+### Added
+- Appearance setting: Follow phone, Light or Dark
+- After saving, a summary shows the plan, its date and time and every reminder, with Change details and Change reminders; OK opens the timeline with the new plan highlighted
+- Every choice has a "Custom..." option: discreet mode (for a time or until a time), ring limit, snooze length, number of snoozes, and reminder times (any minutes, hours or days before, or an exact date and time)
+- A warning before saving a time that has already passed, with "Move to tomorrow"
+- Screenshot errors show what went wrong, with a "Copy details" button
+
+### Changed
+- Clearer status words: Coming up, Past, Done, Cancelled, Missed
+- The battery check only warns when the phone actually restricts Kokhon in the background
+- Screenshot reading: images are opened more reliably, small message times (like 8:18 PM) are ignored, a question and its reply are read together, the plan type nearest the date and time wins, and messages from the day before are dated correctly
+
+### Fixed
+- Dark text on a dark background in dark mode
+
 ## [1.0.0] - 2026-11-06
 
 ### Added

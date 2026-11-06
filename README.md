@@ -11,7 +11,7 @@ Paste it, share it, or screenshot it. Kokhon (কখন, "when") works out the *
 ![Platform](https://img.shields.io/badge/platform-Android%208.0%2B-3DDC84?logo=android&logoColor=white)
 ![Kotlin](https://img.shields.io/badge/Kotlin-Jetpack%20Compose-7F52FF?logo=kotlin&logoColor=white)
 ![CI](https://github.com/MazidUlHaque/Scheduler/actions/workflows/ci.yml/badge.svg)
-![Version](https://img.shields.io/badge/version-1.0.0-1E8E4E)
+![Version](https://img.shields.io/badge/version-1.1.0-1E8E4E)
 ![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)
 
 </div>

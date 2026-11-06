@@ -43,6 +43,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLocale
 import androidx.compose.ui.res.pluralStringResource
@@ -66,6 +67,7 @@ import com.mazidulhaque.kokhon.core.model.EntryType
 import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.ui.common.kokhonApp
 import com.mazidulhaque.kokhon.ui.common.labelRes
+import com.mazidulhaque.kokhon.ui.common.statusWordRes
 import java.time.Duration
 import java.time.LocalDate
 import java.time.ZoneId
@@ -127,7 +129,21 @@ fun HomeScreen(
                 current.discreetUntil?.let { until ->
                     DiscreetBanner(until = until, onTurnOff = { vm.toggleDiscreet(currentlyOn = true) })
                 }
+                // After a save, scroll to the new plan and highlight it for a moment.
+                val justSaved by app.justSaved.collectAsStateWithLifecycle()
+                val listState =
+                    androidx.compose.foundation.lazy
+                        .rememberLazyListState()
+                LaunchedEffect(justSaved, current.rows.size) {
+                    if (justSaved.isEmpty()) return@LaunchedEffect
+                    val index = current.rows.indexOfFirst { it is TimelineRow.Item && it.entry.id in justSaved }
+                    if (index < 0) return@LaunchedEffect
+                    listState.animateScrollToItem(index)
+                    kotlinx.coroutines.delay(2_500)
+                    app.justSaved.value = emptySet()
+                }
                 LazyColumn(
+                    state = listState,
                     modifier = Modifier.weight(1f),
                     contentPadding = PaddingValues(start = 22.dp, end = 22.dp, top = 4.dp, bottom = 16.dp),
                     verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -145,6 +161,7 @@ fun HomeScreen(
                             is TimelineRow.Item -> {
                                 TimelineItem(
                                     row,
+                                    highlighted = row.entry.id in justSaved,
                                     onOpen = { onOpenEntry(row.entry.id) },
                                     onToggleDone = { vm.setDone(row.entry, it) },
                                 )
@@ -349,6 +366,7 @@ private fun DayHeaderRow(
 @Composable
 private fun TimelineItem(
     row: TimelineRow.Item,
+    highlighted: Boolean,
     onOpen: () -> Unit,
     onToggleDone: (Boolean) -> Unit,
 ) {
@@ -361,6 +379,7 @@ private fun TimelineItem(
             Modifier
                 .fillMaxWidth()
                 .heightIn(min = 56.dp)
+                .background(if (highlighted) KokhonColors.Highlighter.copy(alpha = 0.45f) else Color.Transparent, RoundedCornerShape(12.dp))
                 .alpha(if (row.finished) 0.62f else 1f)
                 .clickable(onClick = onOpen),
         verticalAlignment = Alignment.CenterVertically,
@@ -373,7 +392,7 @@ private fun TimelineItem(
             modifier = Modifier.width(76.dp),
         )
         if (row.finished && row.status == EntryStatus.COMPLETED) {
-            DoneBadge(contentDescription = stringResource(R.string.status_completed))
+            DoneBadge(contentDescription = stringResource(row.entry.statusWordRes(row.now)))
         } else {
             Box(
                 Modifier
@@ -421,7 +440,7 @@ private fun subtitle(row: TimelineRow.Item): String {
     val parts = mutableListOf(stringResource(entry.type.labelRes()))
     when (row.status) {
         EntryStatus.COMPLETED -> {
-            parts += stringResource(R.string.status_completed)
+            parts += stringResource(row.entry.statusWordRes(row.now))
         }
 
         EntryStatus.CANCELLED -> {

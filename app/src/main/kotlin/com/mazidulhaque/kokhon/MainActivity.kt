@@ -5,10 +5,19 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.core.content.IntentCompat
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.mazidulhaque.kokhon.core.data.settings.Appearance
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonTheme
 import com.mazidulhaque.kokhon.navigation.KokhonNavHost
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 
 class MainActivity : ComponentActivity() {
     /** An entry to open, set when the app is launched from a notification. */
@@ -24,9 +33,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         handle(intent)
+        val appearanceFlow = (application as KokhonApplication).settingsRepository.settings.map { it.appearance }
         setContent {
-            KokhonTheme {
-                KokhonNavHost(entryToOpen = entryToOpen, sharedText = sharedText, sharedImage = sharedImage)
+            val appearance by appearanceFlow.collectAsStateWithLifecycle(initialValue = Appearance.SYSTEM)
+            val dark =
+                when (appearance) {
+                    Appearance.SYSTEM -> isSystemInDarkTheme()
+                    Appearance.LIGHT -> false
+                    Appearance.DARK -> true
+                }
+            KokhonTheme(darkTheme = dark) {
+                // The surface gives every screen readable text colours in both light and dark mode.
+                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+                    KokhonNavHost(entryToOpen = entryToOpen, sharedText = sharedText, sharedImage = sharedImage)
+                }
             }
         }
     }

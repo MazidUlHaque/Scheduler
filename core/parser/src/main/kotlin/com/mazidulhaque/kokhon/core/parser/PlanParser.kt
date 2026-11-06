@@ -159,7 +159,15 @@ class PlanParser(
         val dateMention = m.dates.firstOrNull()
         val timeMention = m.times.firstOrNull()
         if (dateMention == null && timeMention == null) return null
-        val typeMention = m.types.firstOrNull { !it.weak } ?: m.types.firstOrNull()
+        // With several kinds of plan mentioned ("our game ... a meeting tomorrow"), the one next to the date or time wins.
+        val anchors: List<Mention> = listOfNotNull(dateMention, timeMention)
+        val typeMention =
+            m.types
+                .filter { !it.weak }
+                .ifEmpty { m.types }
+                // A specific kind (birthday, meeting) beats a general one (party, event) mentioned alongside it.
+                .let { list -> list.filter { it.type != EntryType.EVENT }.ifEmpty { list } }
+                .minByOrNull { t -> anchors.minOfOrNull { kotlin.math.abs(it.start - t.start) } ?: t.start }
         val task = m.tasks.firstOrNull()
         val type = typeMention?.type ?: if (task != null) EntryType.TASK else EntryType.OTHER
         val period = dateMention?.period ?: m.periods.firstOrNull()?.period ?: typeMention?.period

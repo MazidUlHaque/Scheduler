@@ -75,28 +75,12 @@ fun DetailScreen(
     val current = entry ?: return
     val status = current.statusAt(vm.clock.instant())
     val statusText =
-        stringResource(
-            when (status) {
-                EntryStatus.UPCOMING -> R.string.status_upcoming
-                EntryStatus.ONGOING -> R.string.status_ongoing
-                EntryStatus.COMPLETED -> R.string.status_completed
-                EntryStatus.CANCELLED -> R.string.status_cancelled
-                EntryStatus.MISSED -> R.string.status_missed
-            },
-        )
+        com.mazidulhaque.kokhon.ui.common
+            .statusSentence(current, vm.clock.instant())
     val finished = status == EntryStatus.COMPLETED || status == EntryStatus.CANCELLED
 
     Column(modifier = Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding()) {
-        KokhonTopBar(title = "", onBack = onBack) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                if (status == EntryStatus.COMPLETED) DoneBadge(size = 20.dp, contentDescription = statusText)
-                Text(
-                    statusText,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-        }
+        KokhonTopBar(title = "", onBack = onBack)
         Column(
             modifier = Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 22.dp),
             verticalArrangement = Arrangement.spacedBy(18.dp),
@@ -128,6 +112,11 @@ fun DetailScreen(
                     ),
                     style = MaterialTheme.typography.bodyLarge,
                 )
+                // Status as a plain sentence, so "done" can never be confused with "saved".
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (status == EntryStatus.COMPLETED) DoneBadge(size = 20.dp, contentDescription = "")
+                    Text(statusText, style = MaterialTheme.typography.titleSmall)
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(8.dp),

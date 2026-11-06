@@ -204,6 +204,7 @@ fun ReminderChainEditor(
 
     if (adding) {
         AddReminderDialog(
+            entryStart = entryStart,
             onDismiss = { adding = false },
             onAdd = { step ->
                 adding = false
@@ -263,14 +264,22 @@ private fun ReminderRuler(steps: List<ReminderStep>) {
     }
 }
 
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 private fun AddReminderDialog(
+    entryStart: Instant,
     onDismiss: () -> Unit,
     onAdd: (ReminderStep) -> Unit,
 ) {
+    val context = LocalContext.current
     val options = listOf(0L, 5L, 10L, 15L, 30L, 60L, 120L, 24 * 60L)
     var minutes by remember { mutableLongStateOf(10L) }
     var style by remember { mutableStateOf(ReminderStyle.NOTIFICATION) }
+    var typing by remember { mutableStateOf(false) }
+    var pickingDate by remember { mutableStateOf(false) }
+    var pickedDate by remember { mutableStateOf<java.time.LocalDate?>(null) }
+    var afterStart by remember { mutableStateOf(false) }
+    val zone = java.time.ZoneId.systemDefault()
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
@@ -300,6 +309,19 @@ private fun AddReminderDialog(
                             },
                         )
                     }
+                    // A value the user typed or picked shows as its own selected chip.
+                    if (minutes !in options) {
+                        FilterChip(selected = true, onClick = { typing = true }, label = { Text(offsetLabel(Duration.ofMinutes(minutes))) })
+                    }
+                    FilterChip(selected = false, onClick = { typing = true }, label = { Text(stringResource(R.string.custom)) })
+                    FilterChip(selected = false, onClick = { pickingDate = true }, label = { Text(stringResource(R.string.at_set_time)) })
+                }
+                if (afterStart) {
+                    Text(
+                        stringResource(R.string.set_time_after_start),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = KokhonColors.StopText,
+                    )
                 }
                 Text(stringResource(R.string.choose_how), style = MaterialTheme.typography.titleSmall)
                 ReminderStyle.entries.forEach { option ->
@@ -308,10 +330,7 @@ private fun AddReminderDialog(
                             Modifier
                                 .fillMaxWidth()
                                 .heightIn(min = 44.dp)
-                                .selectable(selected = style == option, role = Role.RadioButton, onClick = {
-                                    style =
-                                        option
-                                }),
+                                .selectable(selected = style == option, role = Role.RadioButton, onClick = { style = option }),
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         RadioButton(selected = style == option, onClick = null)
@@ -322,4 +341,78 @@ private fun AddReminderDialog(
             }
         },
     )
+
+    if (typing) {
+        CustomValueDialog(
+            title = stringResource(R.string.choose_when),
+            range = 0..(60 * 24 * 60),
+            units =
+                listOf(
+                    ValueUnit(stringResource(R.string.unit_minutes), 1),
+                    ValueUnit(stringResource(R.string.unit_hours), 60),
+                    ValueUnit(stringResource(R.string.unit_days), 60 * 24),
+                ),
+            initialBase = minutes.toInt(),
+            onDismiss = { typing = false },
+            onConfirm = {
+                minutes = it.toLong()
+                afterStart = false
+                typing = false
+            },
+        )
+    }
+
+    if (pickingDate) {
+        val picker =
+            androidx.compose.material3.rememberDatePickerState(
+                initialSelectedDateMillis =
+                    entryStart
+                        .atZone(
+                            zone,
+                        ).toLocalDate()
+                        .atStartOfDay(java.time.ZoneOffset.UTC)
+                        .toInstant()
+                        .toEpochMilli(),
+            )
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = { pickingDate = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    pickedDate = picker.selectedDateMillis?.let { Instant.ofEpochMilli(it).atZone(java.time.ZoneOffset.UTC).toLocalDate() }
+                    pickingDate = false
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = { TextButton(onClick = { pickingDate = false }) { Text(stringResource(R.string.cancel)) } },
+        ) { androidx.compose.material3.DatePicker(state = picker) }
+    }
+
+    pickedDate?.let { date ->
+        val startLocal = entryStart.atZone(zone)
+        val timeState =
+            androidx.compose.material3.rememberTimePickerState(
+                initialHour = startLocal.hour,
+                initialMinute = startLocal.minute,
+                is24Hour =
+                    android.text.format.DateFormat
+                        .is24HourFormat(context),
+            )
+        AlertDialog(
+            onDismissRequest = { pickedDate = null },
+            confirmButton = {
+                TextButton(onClick = {
+                    val at = date.atTime(timeState.hour, timeState.minute).atZone(zone).toInstant()
+                    val before = Duration.between(at, entryStart)
+                    if (before.isNegative) {
+                        afterStart = true
+                    } else {
+                        minutes = before.toMinutes()
+                        afterStart = false
+                    }
+                    pickedDate = null
+                }) { Text(stringResource(R.string.ok)) }
+            },
+            dismissButton = { TextButton(onClick = { pickedDate = null }) { Text(stringResource(R.string.cancel)) } },
+            text = { androidx.compose.material3.TimePicker(state = timeState) },
+        )
+    }
 }

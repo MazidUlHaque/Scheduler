@@ -41,6 +41,7 @@ data class EditorState(
     val importanceTouched: Boolean = false,
     val showTitleError: Boolean = false,
     val savedId: Long? = null,
+    val savedEntry: Entry? = null,
 )
 
 class EditorViewModel(
@@ -169,7 +170,7 @@ class EditorViewModel(
             )
         viewModelScope.launch {
             val saved = coordinator.save(entry, sourceText = if (base == null) prefill?.source?.originalText else null)
-            mutableState.update { it.copy(savedId = saved.id) }
+            mutableState.update { it.copy(savedId = saved.id, savedEntry = saved) }
         }
     }
 }

@@ -22,9 +22,13 @@ import kotlinx.serialization.json.Json
 import java.time.Duration
 import java.time.Instant
 
-/** User settings that affect how reminders ring. */
+/** Light or dark look: follow the phone, or always one of them. */
+enum class Appearance { SYSTEM, LIGHT, DARK }
+
+/** User settings that affect how reminders ring and how the app looks. */
 data class ReminderSettings(
     val alarm: AlarmBehavior = AlarmBehavior(),
+    val appearance: Appearance = Appearance.SYSTEM,
     /** Discreet mode turns every alarm into a vibrate-only notification until this moment. */
     val discreetUntil: Instant? = null,
     /** When true, Critical entries may ring even when the phone is on silent or Do Not Disturb. */
@@ -49,6 +53,7 @@ class SettingsRepository(
 
     private object Keys {
         val ringLimitSeconds = intPreferencesKey("ring_limit_seconds")
+        val appearance = stringPreferencesKey("appearance")
         val snoozeMinutes = intPreferencesKey("snooze_minutes")
         val maxSnoozes = intPreferencesKey("max_snoozes")
         val volumeSilences = booleanPreferencesKey("volume_button_silences")
@@ -82,6 +87,7 @@ class SettingsRepository(
                         volumeButtonSilences = p[Keys.volumeSilences] ?: defaults.volumeButtonSilences,
                         gentleStart = p[Keys.gentleStart] ?: defaults.gentleStart,
                     ),
+                appearance = Appearance.entries.firstOrNull { it.name == p[Keys.appearance] } ?: Appearance.SYSTEM,
                 discreetUntil = p[Keys.discreetUntil]?.takeIf { it > 0 }?.let(Instant::ofEpochMilli),
                 criticalBypassesSilent = p[Keys.criticalBypass] ?: false,
                 morningSummary = p[Keys.morningSummary] ?: true,
@@ -120,6 +126,10 @@ class SettingsRepository(
             it[Keys.morningSummary] = morning
             it[Keys.eveningSummary] = evening
         }
+    }
+
+    suspend fun setAppearance(appearance: Appearance) {
+        store.edit { it[Keys.appearance] = appearance.name }
     }
 
     suspend fun setWatchScreenshots(enabled: Boolean) {

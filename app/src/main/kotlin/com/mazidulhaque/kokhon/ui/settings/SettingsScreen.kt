@@ -53,7 +53,9 @@ import com.mazidulhaque.kokhon.core.alarm.ReminderNotifier
 import com.mazidulhaque.kokhon.core.designsystem.component.DoneBadge
 import com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonColors
+import com.mazidulhaque.kokhon.ui.common.CustomValueDialog
 import com.mazidulhaque.kokhon.ui.common.KokhonTopBar
+import com.mazidulhaque.kokhon.ui.common.ValueUnit
 import com.mazidulhaque.kokhon.ui.common.kokhonApp
 import kotlinx.coroutines.launch
 import java.time.Duration
@@ -62,6 +64,7 @@ import java.time.Duration
 fun durationText(value: Duration): String =
     when {
         value.seconds < 60 -> pluralStringResource(R.plurals.seconds_value, value.seconds.toInt(), value.seconds.toInt())
+        value.seconds % 60 != 0L -> stringResource(R.string.minutes_seconds_value, value.toMinutes().toInt(), (value.seconds % 60).toInt())
         else -> pluralStringResource(R.plurals.minutes_value, value.toMinutes().toInt(), value.toMinutes().toInt())
     }
 
@@ -146,11 +149,26 @@ fun SettingsScreen(onBack: () -> Unit) {
                             )
                         }
                     }
-                    val ignoringBattery =
-                        context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) ==
-                            true
-                    CheckRow(stringResource(R.string.check_battery), ok = ignoringBattery) {
-                        context.openSettings(Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS))
+                    // Only "Restricted" background use stops reminders; "Optimized" works because Kokhon uses alarm-clock timers.
+                    val restricted =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+                            context.getSystemService<android.app.ActivityManager>()?.isBackgroundRestricted == true
+                    val appDetails = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, "package:${context.packageName}".toUri())
+                    CheckRow(stringResource(R.string.check_background), ok = !restricted) { context.openSettings(appDetails) }
+                    val unrestricted =
+                        context.getSystemService<PowerManager>()?.isIgnoringBatteryOptimizations(context.packageName) == true
+                    if (!restricted && !unrestricted) {
+                        Row(modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                stringResource(R.string.battery_optional),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f).padding(start = 34.dp, end = 12.dp),
+                            )
+                            OutlinedButton(onClick = { context.openSettings(appDetails) }, modifier = Modifier.heightIn(min = 44.dp)) {
+                                Text(stringResource(R.string.open), color = MaterialTheme.colorScheme.onSurface)
+                            }
+                        }
                     }
                 }
                 AutoStart.makerName()?.let { maker ->
@@ -170,7 +188,24 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            Section(stringResource(R.string.appearance)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        com.mazidulhaque.kokhon.core.data.settings.Appearance.SYSTEM to R.string.appearance_system,
+                        com.mazidulhaque.kokhon.core.data.settings.Appearance.LIGHT to R.string.appearance_light,
+                        com.mazidulhaque.kokhon.core.data.settings.Appearance.DARK to R.string.appearance_dark,
+                    ).forEach { (mode, label) ->
+                        FilterChip(
+                            selected = prefs.appearance == mode,
+                            onClick = { vm.setAppearance(mode) },
+                            label = { Text(stringResource(label)) },
+                        )
+                    }
+                }
+            }
+
             Section(stringResource(R.string.discreet_mode)) {
+                var customDiscreet by remember { mutableStateOf(false) }
                 Text(
                     stringResource(R.string.discreet_mode_desc),
                     style = MaterialTheme.typography.bodySmall,
@@ -196,16 +231,32 @@ fun SettingsScreen(onBack: () -> Unit) {
                     FilterChip(selected = false, onClick = {
                         vm.setDiscreet(SettingsViewModel.DiscreetChoice.UNTIL_MORNING)
                     }, label = { Text(stringResource(R.string.discreet_until_morning)) })
+                    FilterChip(selected = false, onClick = { customDiscreet = true }, label = { Text(stringResource(R.string.custom)) })
+                }
+                if (customDiscreet) {
+                    DiscreetCustomDialog(
+                        onDismiss = { customDiscreet = false },
+                        onConfirm = { until ->
+                            vm.setDiscreetUntil(until)
+                            customDiscreet = false
+                        },
+                        now = vm.clock.instant(),
+                    )
                 }
             }
 
             Section(stringResource(R.string.alarm_settings)) {
+                val seconds = ValueUnit(stringResource(R.string.unit_seconds), 1)
+                val minutes = ValueUnit(stringResource(R.string.unit_minutes), 60)
                 ChoiceRow(
                     title = stringResource(R.string.ring_limit),
                     options = listOf(30L, 60L, 120L, 300L).map(Duration::ofSeconds),
                     selected = prefs.alarm.ringLimit,
                     label = { durationText(it) },
                     onSelect = { value -> vm.updateAlarm { it.copy(ringLimit = value) } },
+                    custom = CustomSpec(stringResource(R.string.ring_limit), 10..600, listOf(seconds, minutes)),
+                    toBase = { it.seconds.toInt() },
+                    fromBase = { Duration.ofSeconds(it.toLong()) },
                 )
                 ChoiceRow(
                     title = stringResource(R.string.snooze_length),
@@ -213,6 +264,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                     selected = prefs.alarm.snoozeLength,
                     label = { durationText(it) },
                     onSelect = { value -> vm.updateAlarm { it.copy(snoozeLength = value) } },
+                    custom =
+                        CustomSpec(
+                            stringResource(R.string.snooze_length),
+                            1..60,
+                            listOf(ValueUnit(stringResource(R.string.unit_minutes), 1)),
+                        ),
+                    toBase = { it.toMinutes().toInt() },
+                    fromBase = { Duration.ofMinutes(it.toLong()) },
                 )
                 ChoiceRow(
                     title = stringResource(R.string.max_snoozes),
@@ -220,6 +279,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                     selected = prefs.alarm.maxSnoozes,
                     label = { it.toString() },
                     onSelect = { value -> vm.updateAlarm { it.copy(maxSnoozes = value) } },
+                    custom =
+                        CustomSpec(
+                            stringResource(R.string.max_snoozes),
+                            0..10,
+                            listOf(ValueUnit(stringResource(R.string.unit_times), 1)),
+                        ),
+                    toBase = { it },
+                    fromBase = { it },
                 )
                 SwitchRow(
                     stringResource(R.string.volume_button_setting),
@@ -408,19 +475,135 @@ private fun <T> ChoiceRow(
     selected: T,
     label: @Composable (T) -> String,
     onSelect: (T) -> Unit,
+    custom: CustomSpec,
+    toBase: (T) -> Int,
+    fromBase: (Int) -> T,
 ) {
+    var editing by remember { mutableStateOf(false) }
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
         Text(title, style = MaterialTheme.typography.bodyMedium)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             options.forEach { option ->
-                FilterChip(
-                    selected = option == selected,
-                    onClick = { onSelect(option) },
-                    label = { Text(label(option)) },
-                )
+                FilterChip(selected = option == selected, onClick = { onSelect(option) }, label = { Text(label(option)) })
             }
+            // A value the user typed shows as its own selected chip.
+            if (selected !in options) FilterChip(selected = true, onClick = { editing = true }, label = { Text(label(selected)) })
+            FilterChip(selected = false, onClick = { editing = true }, label = { Text(stringResource(R.string.custom)) })
         }
     }
+    if (editing) {
+        CustomValueDialog(
+            title = custom.title,
+            range = custom.range,
+            units = custom.units,
+            initialBase = toBase(selected),
+            onDismiss = { editing = false },
+            onConfirm = { base ->
+                onSelect(fromBase(base))
+                editing = false
+            },
+        )
+    }
+}
+
+/** What the "Custom…" dialog of a choice row asks for. */
+private data class CustomSpec(
+    val title: String,
+    val range: IntRange,
+    val units: List<ValueUnit>,
+)
+
+/** Discreet mode for any length of time, or until a chosen clock time. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun DiscreetCustomDialog(
+    now: java.time.Instant,
+    onDismiss: () -> Unit,
+    onConfirm: (java.time.Instant) -> Unit,
+) {
+    val context = LocalContext.current
+    var untilMode by remember { mutableStateOf(false) }
+    var amount by remember { mutableStateOf("45") }
+    var hoursUnit by remember { mutableStateOf(false) }
+    val picker =
+        androidx.compose.material3.rememberTimePickerState(
+            initialHour = (now.atZone(java.time.ZoneId.systemDefault()).hour + 1) % 24,
+            initialMinute = 0,
+            is24Hour =
+                android.text.format.DateFormat
+                    .is24HourFormat(context),
+        )
+    val minutes = amount.toIntOrNull()?.let { if (hoursUnit) it * 60 else it }
+    val validFor = minutes != null && minutes in 1..(24 * 60)
+    androidx.compose.material3.AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.discreet_custom_title)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    FilterChip(
+                        selected = !untilMode,
+                        onClick = { untilMode = false },
+                        label = { Text(stringResource(R.string.discreet_for)) },
+                    )
+                    FilterChip(
+                        selected = untilMode,
+                        onClick = { untilMode = true },
+                        label = { Text(stringResource(R.string.discreet_until)) },
+                    )
+                }
+                if (untilMode) {
+                    androidx.compose.material3.TimePicker(state = picker)
+                } else {
+                    androidx.compose.material3.OutlinedTextField(
+                        value = amount,
+                        onValueChange = { amount = it.filter(Char::isDigit).take(4) },
+                        singleLine = true,
+                        keyboardOptions =
+                            androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Number,
+                            ),
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilterChip(
+                            selected = !hoursUnit,
+                            onClick = { hoursUnit = false },
+                            label = { Text(stringResource(R.string.unit_minutes)) },
+                        )
+                        FilterChip(
+                            selected = hoursUnit,
+                            onClick = { hoursUnit = true },
+                            label = { Text(stringResource(R.string.unit_hours)) },
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            androidx.compose.material3.TextButton(
+                enabled = untilMode || validFor,
+                onClick = {
+                    val until =
+                        if (untilMode) {
+                            val zone = java.time.ZoneId.systemDefault()
+                            var at =
+                                now
+                                    .atZone(zone)
+                                    .toLocalDate()
+                                    .atTime(picker.hour, picker.minute)
+                                    .atZone(zone)
+                            if (!at.toInstant().isAfter(now)) at = at.plusDays(1)
+                            at.toInstant()
+                        } else {
+                            now.plus(Duration.ofMinutes(minutes!!.toLong()))
+                        }
+                    onConfirm(until)
+                },
+            ) { Text(stringResource(R.string.ok)) }
+        },
+        dismissButton = { androidx.compose.material3.TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 @Composable

@@ -30,6 +30,7 @@ sealed interface TimelineRow {
     data class Item(
         val entry: Entry,
         val status: EntryStatus,
+        val now: Instant,
     ) : TimelineRow {
         val finished: Boolean get() =
             status == EntryStatus.COMPLETED || status == EntryStatus.CANCELLED ||
@@ -84,14 +85,14 @@ class HomeViewModel(
         val today = now.atZone(zone).toLocalDate()
         val byDay = entries.groupBy { it.start.atZone(zone).toLocalDate() }.toSortedMap()
         val rows = mutableListOf<TimelineRow>()
-        val todayItems = byDay[today].orEmpty().map { TimelineRow.Item(it, it.statusAt(now)) }
+        val todayItems = byDay[today].orEmpty().map { TimelineRow.Item(it, it.statusAt(now), now) }
         // Position communicates time: finished plans above the Now line, everything else below.
         rows += todayItems.filter { it.finished }
         rows += TimelineRow.NowLine(now)
         rows += todayItems.filterNot { it.finished }
         byDay.filterKeys { it.isAfter(today) }.forEach { (date, dayEntries) ->
             rows += TimelineRow.DayHeader(date)
-            rows += dayEntries.map { TimelineRow.Item(it, it.statusAt(now)) }
+            rows += dayEntries.map { TimelineRow.Item(it, it.statusAt(now), now) }
         }
         val unfinished = entries.filter { !it.isFinishedAt(now) }
         val ongoing = unfinished.firstOrNull { it.statusAt(now) == EntryStatus.ONGOING }

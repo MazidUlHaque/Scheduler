@@ -58,6 +58,9 @@ class KokhonApplication :
     /** A plan found in a message that the user wants to finish in the full editor. */
     val captureDraft = MutableStateFlow<Entry?>(null)
 
+    /** Plans just saved, highlighted once on the timeline. */
+    val justSaved = MutableStateFlow<Set<Long>>(emptySet())
+
     /** The most recently deleted entry, offered for Undo on the home screen. */
     val pendingUndo = MutableStateFlow<Entry?>(null)
 

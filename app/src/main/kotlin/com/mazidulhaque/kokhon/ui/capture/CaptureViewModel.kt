@@ -14,6 +14,7 @@ import com.mazidulhaque.kokhon.core.model.Importance
 import com.mazidulhaque.kokhon.core.model.ReminderChain
 import com.mazidulhaque.kokhon.core.model.clashesIn
 import com.mazidulhaque.kokhon.core.model.duplicateIn
+import com.mazidulhaque.kokhon.core.ocr.ScreenshotReadException
 import com.mazidulhaque.kokhon.core.ocr.ScreenshotReader
 import com.mazidulhaque.kokhon.core.parser.ChangeRequest
 import com.mazidulhaque.kokhon.core.parser.MatchCandidate
@@ -35,6 +36,11 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZonedDateTime
+
+data class ImageError(
+    val reason: ScreenshotReadException.Reason,
+    val details: String,
+)
 
 /** A plan found in the message, as the user is editing it. */
 data class DraftUi(
@@ -71,13 +77,15 @@ data class CaptureState(
     val current: Int = 0,
     val candidates: List<CandidateUi> = emptyList(),
     val target: Entry? = null,
-    /** Set when finished: the plan to open, or 0 to go home. */
-    val finishedWith: Long? = null,
+    /** The plans just saved or updated, shown in the confirmation. */
+    val saved: List<Entry>? = null,
+    val savedWasUpdate: Boolean = false,
     /** Preview of the screenshot the text came from. */
     val thumbnail: Bitmap? = null,
     /** When the message was written, if the screenshot showed it; dates are read relative to it. */
     val writtenAt: ZonedDateTime? = null,
-    val imageUnreadable: Boolean = false,
+    /** Why the last screenshot could not be read, with details the user can copy. */
+    val imageError: ImageError? = null,
 )
 
 class CaptureViewModel(
@@ -125,20 +133,48 @@ class CaptureViewModel(
     /** Reads the text in a screenshot or photo, on the device, then looks for plans in it. */
     fun readImage(uri: Uri) {
         sourceKind = EntrySource.Kind.SCREENSHOT
-        mutableState.update { it.copy(mode = CaptureMode.READING, imageUnreadable = false) }
+        mutableState.update { it.copy(mode = CaptureMode.READING, imageError = null) }
         viewModelScope.launch {
             val thumbnail = reader.thumbnail(uri)
             mutableState.update { it.copy(thumbnail = thumbnail) }
-            val message = runCatching { reader.read(uri) }.getOrNull()
-            if (message == null || message.text.isBlank()) {
-                mutableState.update { it.copy(mode = CaptureMode.INPUT, imageUnreadable = true) }
-                return@launch
-            }
+            val message =
+                try {
+                    reader.read(uri)
+                } catch (e: ScreenshotReadException) {
+                    mutableState.update { it.copy(mode = CaptureMode.INPUT, imageError = ImageError(e.reason, details(e))) }
+                    return@launch
+                } catch (e: Exception) {
+                    val error = ImageError(ScreenshotReadException.Reason.RECOGNITION_FAILED, details(e))
+                    mutableState.update { it.copy(mode = CaptureMode.INPUT, imageError = error) }
+                    return@launch
+                }
             val writtenAt = message.reference.atZone(clock.zone)
             mutableState.update { it.copy(text = message.text, writtenAt = writtenAt.takeIf { message.referenceFromScreenshot }) }
             analyse(message.text)
         }
     }
+
+    /** What went wrong, in a form the user can paste into a message to the developer. */
+    private fun details(e: Throwable): String =
+        buildString {
+            append("Kokhon screenshot error\n")
+            append(
+                "Android ",
+            ).append(android.os.Build.VERSION.RELEASE).append(" (API ").append(android.os.Build.VERSION.SDK_INT).append("), ")
+            append(android.os.Build.MANUFACTURER).append(' ').append(android.os.Build.MODEL).append('\n')
+            var cause: Throwable? = e
+            while (cause != null) {
+                append(cause.javaClass.name).append(": ").append(cause.message).append('\n')
+                cause.suppressed.forEach {
+                    append("  also tried: ")
+                        .append(it.javaClass.name)
+                        .append(": ")
+                        .append(it.message)
+                        .append('\n')
+                }
+                cause = cause.cause.takeIf { it !== cause }
+            }
+        }
 
     /** The moment relative dates are read from: when the message was written, or now. */
     private fun referenceNow(): ZonedDateTime = state.value.writtenAt ?: clock.instant().atZone(clock.zone)
@@ -267,6 +303,8 @@ class CaptureViewModel(
         include: Boolean,
     ) = mutableState.update { s -> s.copy(drafts = s.drafts.mapIndexed { i, d -> if (i == index) d.copy(include = include) else d }) }
 
+    fun isPast(draft: DraftUi): Boolean = startOf(draft).isBefore(clock.instant())
+
     fun startOf(draft: DraftUi): Instant = LocalDateTime.of(draft.date, draft.time).atZone(clock.zone).toInstant()
 
     private fun DraftUi.toEntry(): Entry =
@@ -288,7 +326,7 @@ class CaptureViewModel(
         if (chosen.isEmpty()) return
         viewModelScope.launch {
             val saved = chosen.map { coordinator.save(it.toEntry(), sourceText = state.value.text) }
-            mutableState.update { it.copy(finishedWith = if (saved.size == 1) saved.single().id else 0L) }
+            mutableState.update { it.copy(saved = saved, savedWasUpdate = false) }
         }
     }
 
@@ -333,18 +371,8 @@ class CaptureViewModel(
                     }
                 coordinator.save(updated, sourceText = state.value.text)
             }
-            mutableState.update {
-                it.copy(
-                    finishedWith =
-                        if (chosen.size == 1) {
-                            chosen
-                                .single()
-                                .candidate.entry.id
-                        } else {
-                            0L
-                        },
-                )
-            }
+            val updated = chosen.mapNotNull { repository.get(it.candidate.entry.id) }
+            mutableState.update { it.copy(saved = updated, savedWasUpdate = true) }
         }
     }
 
