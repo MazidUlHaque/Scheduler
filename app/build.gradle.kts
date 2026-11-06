@@ -1,8 +1,24 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlin.serialization)
 }
+
+/**
+ * Release signing. The key never lives in the repository: locally it is read from keystore.properties
+ * (git-ignored), on GitHub Actions from repository secrets. See docs/releasing.md.
+ */
+val signingProperties =
+    Properties().apply {
+        val file = rootProject.file("keystore.properties")
+        if (file.exists()) file.inputStream().use(::load)
+    }
+
+fun signingValue(name: String): String? = System.getenv(name) ?: signingProperties.getProperty(name)
+
+val releaseKeystore = signingValue("KOKHON_KEYSTORE_FILE")
 
 android {
     namespace = "com.mazidulhaque.kokhon"
@@ -12,13 +28,25 @@ android {
         applicationId = "com.mazidulhaque.kokhon"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 100
+        versionName = "1.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    signingConfigs {
+        if (releaseKeystore != null) {
+            create("release") {
+                storeFile = file(releaseKeystore)
+                storePassword = signingValue("KOKHON_KEYSTORE_PASSWORD")
+                keyAlias = signingValue("KOKHON_KEY_ALIAS")
+                keyPassword = signingValue("KOKHON_KEY_PASSWORD")
+            }
+        }
     }
 
     buildTypes {
         release {
+            if (releaseKeystore != null) signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

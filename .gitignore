@@ -14,6 +14,8 @@ captures/
 # Local config & secrets
 local.properties
 keystore.properties
+*.jks.txt
+kokhon-release.txt
 *.jks
 *.keystore
 google-services.json
