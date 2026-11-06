@@ -183,6 +183,20 @@ fun DetailScreen(
                 ActionRow(stringResource(R.string.reschedule), onClick = onEdit)
                 ActionRow(stringResource(R.string.update_from_message), onClick = onUpdateFromMessage)
                 ActionRow(stringResource(R.string.change_reminders), onClick = onEditReminders)
+                ActionRow(
+                    stringResource(R.string.add_to_phone_calendar),
+                    onClick = {
+                        com.mazidulhaque.kokhon.transfer.DataTransfer
+                            .addToPhoneCalendar(context, current)
+                    },
+                )
+                ActionRow(
+                    stringResource(R.string.share_calendar_file),
+                    onClick = {
+                        com.mazidulhaque.kokhon.transfer.DataTransfer
+                            .shareAsCalendarFile(context, current, vm.clock.instant(), vm.clock.zone)
+                    },
+                )
                 val copyTemplate = stringResource(R.string.copy_suffix, "%s")
                 ActionRow(
                     stringResource(R.string.duplicate),

@@ -298,4 +298,25 @@
     <string name="screenshot_plan_found">Make it a plan?</string>
     <string name="screenshot_change_found">This screenshot changes one of your plans</string>
     <string name="only_selected_photos">Kokhon can only see the photos you picked, so it can\'t notice new screenshots. Allow access to all photos in Android settings to use this.</string>
+    <string name="backup_section">Backup &amp; calendar files</string>
+    <string name="backup_section_desc">Your plans live only on this phone. Back them up before changing phones.</string>
+    <string name="backup_now">Back up all plans</string>
+    <string name="restore_backup">Restore from a backup</string>
+    <string name="export_calendar">Export to a calendar file (.ics)</string>
+    <string name="import_calendar">Import a calendar file (.ics)</string>
+    <plurals name="exported_n">
+        <item quantity="one">Saved %1$d plan.</item>
+        <item quantity="other">Saved %1$d plans.</item>
+    </plurals>
+    <plurals name="imported_added">
+        <item quantity="one">Added %1$d plan.</item>
+        <item quantity="other">Added %1$d plans.</item>
+    </plurals>
+    <plurals name="imported_skipped">
+        <item quantity="one">%1$d was already here.</item>
+        <item quantity="other">%1$d were already here.</item>
+    </plurals>
+    <string name="transfer_failed">That didn\'t work: the file couldn\'t be read or written.</string>
+    <string name="add_to_phone_calendar">Add to phone calendar</string>
+    <string name="share_calendar_file">Share as a calendar invite</string>
 </resources>

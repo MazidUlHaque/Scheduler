@@ -31,6 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -54,6 +55,7 @@ import com.mazidulhaque.kokhon.core.designsystem.format.TimeFormat
 import com.mazidulhaque.kokhon.core.designsystem.theme.KokhonColors
 import com.mazidulhaque.kokhon.ui.common.KokhonTopBar
 import com.mazidulhaque.kokhon.ui.common.kokhonApp
+import kotlinx.coroutines.launch
 import java.time.Duration
 
 @Composable
@@ -270,6 +272,8 @@ fun SettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            BackupSection(app)
+
             Section(stringResource(R.string.my_presets)) {
                 if (prefs.presets.isEmpty()) {
                     Text(
@@ -414,5 +418,75 @@ private fun SwitchRow(
             }
         }
         Switch(checked = checked, onCheckedChange = onChange)
+    }
+}
+
+@Composable
+private fun BackupSection(app: com.mazidulhaque.kokhon.KokhonApplication) {
+    val transfer =
+        remember(app) {
+            com.mazidulhaque.kokhon.transfer
+                .DataTransfer(app)
+        }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    var message by remember { mutableStateOf<String?>(null) }
+    val resources = androidx.compose.ui.platform.LocalResources.current
+    val failed = stringResource(R.string.transfer_failed)
+
+    fun run(block: suspend () -> String) {
+        scope.launch { message = runCatching { block() }.getOrElse { failed } }
+    }
+
+    fun imported(result: com.mazidulhaque.kokhon.transfer.DataTransfer.ImportResult) =
+        listOfNotNull(
+            resources.getQuantityString(R.plurals.imported_added, result.added, result.added),
+            result.skipped.takeIf { it > 0 }?.let { resources.getQuantityString(R.plurals.imported_skipped, it, it) },
+        ).joinToString(" ")
+
+    fun exported(count: Int) = resources.getQuantityString(R.plurals.exported_n, count, count)
+
+    val backup =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
+            uri?.let { run { exported(transfer.backup(it)) } }
+        }
+    val restore =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let { run { imported(transfer.restore(it)) } }
+        }
+    val export =
+        rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/calendar")) { uri ->
+            uri?.let { run { exported(transfer.exportCalendar(it)) } }
+        }
+    val import =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+            uri?.let { run { imported(transfer.importCalendar(it)) } }
+        }
+    val today = java.time.LocalDate.now(app.clock)
+
+    Section(stringResource(R.string.backup_section)) {
+        Text(
+            stringResource(R.string.backup_section_desc),
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        BackupButton(stringResource(R.string.backup_now)) { backup.launch("kokhon-backup-$today.json") }
+        BackupButton(stringResource(R.string.restore_backup)) {
+            restore.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+        }
+        BackupButton(stringResource(R.string.export_calendar)) { export.launch("kokhon-$today.ics") }
+        BackupButton(
+            stringResource(R.string.import_calendar),
+        ) { import.launch(arrayOf("text/calendar", "text/plain", "application/octet-stream")) }
+        message?.let { Text(it, style = MaterialTheme.typography.bodyMedium) }
+    }
+}
+
+@Composable
+private fun BackupButton(
+    label: String,
+    onClick: () -> Unit,
+) {
+    OutlinedButton(onClick = onClick, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
+        Text(label, color = MaterialTheme.colorScheme.onSurface)
     }
 }
